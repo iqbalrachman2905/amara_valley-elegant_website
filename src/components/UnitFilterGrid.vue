@@ -90,6 +90,11 @@ const compareUnits = computed(() => props.units.filter(u => compareIds.value.inc
 
 function chipLabel(f) { return f === 'Semua' ? 'Semua' : statusStyle(f).label; }
 function unitWaLink(unit) { return buildWaLink(props.waNumber, `Halo, saya tertarik dengan Tipe ${unit.tipe} (${formatRupiah(unit.harga)}), boleh info lebih lanjut?`); }
+// Jaga-jaga ganda: deskripsi berbentuk kode hex/teknis tidak ditampilkan.
+function unitDesc(unit) {
+  const s = String(unit.deskripsi || '').trim();
+  return /^[0-9A-Fa-f\s-]{8,}$/.test(s) ? '' : s;
+}
 function toggleCompare(unit) {
   const idx = compareIds.value.indexOf(unit.id);
   if (idx !== -1) { compareIds.value.splice(idx, 1); return; }
@@ -167,7 +172,7 @@ function monthlyFor(unit) { return estimateMonthlyInstallment(unit.harga, { dpPe
           </div>
           <div class="unit-body">
             <h3>Tipe {{ unit.tipe }}</h3>
-            <p v-if="unit.deskripsi" class="unit-desc">{{ unit.deskripsi }}</p>
+            <p v-if="unitDesc(unit)" class="unit-desc">{{ unitDesc(unit) }}</p>
             <ul class="unit-specs">
               <li v-if="unit.luas_tanah">LT {{ unit.luas_tanah }} m²</li>
               <li v-if="unit.luas_bangunan">LB {{ unit.luas_bangunan }} m²</li>

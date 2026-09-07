@@ -74,12 +74,21 @@ const siteplanResult = await pickImage(content.siteplan_thumbnail || content.sit
 
 // ---------- UNIT (cover per kode unit) ----------
 const FALLBACK_COVERS = [dummyFacade, dummyLiving, dummyStreet, dummyDetail];
+// Kolom "deskripsi" di sheet Unit saat ini berisi kode internal (hex, artefak
+// template) — bukan teks pemasaran. Filter kode semacam itu agar tak tampil.
+function cleanUnitDesc(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  if (/^[0-9A-Fa-f\s-]{8,}$/.test(s)) return ''; // kode hex artefak
+  return s;
+}
 const unitsWithCover = await Promise.all(
   units.map(async (unit, idx) => {
     const cover = findCoverImage(gallery, 'unit', unit.kode_unit);
     const src = await pickImage(cover?.thumbnail_url || cover?.image_url, FALLBACK_COVERS[idx % FALLBACK_COVERS.length], { width: 900, height: 640, quality: 72 });
     return {
       ...unit,
+      deskripsi: cleanUnitDesc(unit.deskripsi),
       coverSrc: src?.src || null,
       coverCaption: cover?.caption || null
     };
