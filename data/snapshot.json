@@ -973,5 +973,39 @@
       "rate": 5
     }
   ],
-  "generated_at": "2026-09-07T06:45:00.000Z"
+  "generated_at": "2026-09-07T06:45:00.000Z",
+  "persons": [
+    {
+      "name": "Raka Pramudya",
+      "position": "Marketing Executive",
+      "experience": "8 tahun",
+      "quote": "Rumah yang baik adalah rumah yang membuat penghuninya merasa tenang setiap kali pulang.",
+      "strength": "Komunikatif::Negosiasi::Jaringan luas",
+      "photo": ""
+    },
+    {
+      "name": "Salsabila Zahra",
+      "position": "Customer Relations",
+      "experience": "5 tahun",
+      "quote": "Setiap pertanyaan konsumen layak dijawab dengan jujur — kepercayaan dibangun dari detail kecil.",
+      "strength": "Teliti::Empati::Pelayanan Prima",
+      "photo": ""
+    },
+    {
+      "name": "Dimas Arya Pratama",
+      "position": "Sales & Marketing Lead",
+      "experience": "10 tahun",
+      "quote": "Rumah bukan sekadar aset; ia awal dari kehidupan baru bagi setiap keluarga.",
+      "strength": "Strategi Penjualan::Mentoring Tim::Integritas",
+      "photo": ""
+    },
+    {
+      "name": "Nadia Ramadhani",
+      "position": "Digital Marketing",
+      "experience": "6 tahun",
+      "quote": "Setiap kunjungan ke klaster mengingatkan saya mengapa pekerjaan ini begitu bermakna.",
+      "strength": "Kreatif::Analitik::Konten Visual",
+      "photo": ""
+    }
+  ]
 }

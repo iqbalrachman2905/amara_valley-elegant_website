@@ -34,16 +34,28 @@ const [content, units, gallery, articles, testimonials] = await Promise.all([
   getJson('testimonials').catch(() => null)
 ]);
 
+// Sheet "Person" opsional — backend belum mengeksposnya; bila suatu saat
+// tersedia (mis. action=persons), data ikut disimpan ke snapshot.
+const PERSON_ACTIONS = ['persons', 'person', 'people', 'team', 'staff'];
+let persons = null;
+for (const action of PERSON_ACTIONS) {
+  try {
+    const res = await getJson(action);
+    if (res && !res.error) { persons = res; break; }
+  } catch { /* coba action berikutnya */ }
+}
+
 const snapshot = {
   content: content?.content || content || {},
   units: units || [],
   gallery: gallery || [],
   articles: articles || [],
   testimonials: testimonials || [],
+  persons: persons || [],
   generated_at: new Date().toISOString()
 };
 
 writeFileSync(OUT, JSON.stringify(snapshot, null, 2) + '\n', 'utf8');
 console.log(`✔ data/snapshot.json ditulis (${new Date().toISOString()})`);
 console.log(`  content: ${Object.keys(snapshot.content).length} keys`);
-console.log(`  units: ${snapshot.units.length} · gallery: ${snapshot.gallery.length} · articles: ${snapshot.articles.length} · testimonials: ${snapshot.testimonials.length}`);
+console.log(`  units: ${snapshot.units.length} · gallery: ${snapshot.gallery.length} · articles: ${snapshot.articles.length} · testimonials: ${snapshot.testimonials.length} · persons: ${snapshot.persons.length}`);

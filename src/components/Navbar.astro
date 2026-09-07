@@ -1,15 +1,20 @@
 ---
 import { buildWaLink } from '../lib/format.js';
+import { withBase } from '../lib/paths.js';
 
 const { content } = Astro.props;
 const waLink = buildWaLink(content.whatsapp_number, `Halo, saya tertarik dengan ${content.hero_title || 'Amara Valley'}. Boleh info lebih lanjut?`);
 
+// Anchor section diberi prefix base halaman utama (#tentang → /#tentang)
+// supaya link tetap benar walau navbar dipakai di halaman lain (artikel, tim).
+const home = withBase('');
 const navLinks = [
-  { href: '#tentang', label: 'Tentang' },
-  { href: '#unit', label: 'Tipe Unit' },
-  { href: '#siteplan', label: 'Siteplan' },
-  { href: '#lokasi', label: 'Lokasi' },
-  { href: '#kpr', label: 'Simulasi KPR' }
+  { href: `${home}#tentang`, label: 'Tentang', spy: 'tentang' },
+  { href: `${home}#unit`, label: 'Tipe Unit', spy: 'unit' },
+  { href: `${home}#siteplan`, label: 'Siteplan', spy: 'siteplan' },
+  { href: `${home}#lokasi`, label: 'Lokasi', spy: 'lokasi' },
+  { href: withBase('tim/'), label: 'Tim Kami' },
+  { href: `${home}#kpr`, label: 'Simulasi KPR', spy: 'kpr' }
 ];
 
 const brandName = content.hero_title || content.company_name || 'Amara Valley';
@@ -17,7 +22,7 @@ const brandName = content.hero_title || content.company_name || 'Amara Valley';
 
 <header class="navbar" data-navbar>
   <div class="container navbar-inner">
-    <a href="#" class="brand" aria-label={`${brandName} — kembali ke atas`}>
+    <a href={home} class="brand" aria-label={`${brandName} — kembali ke beranda`}>
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 64 64" width="34" height="34" fill="none" aria-hidden="true">
           <rect x="2" y="2" width="60" height="60" rx="12" stroke="currentColor" stroke-width="2.6" />
@@ -32,7 +37,7 @@ const brandName = content.hero_title || content.company_name || 'Amara Valley';
 
     <nav class="nav-links" aria-label="Navigasi utama">
       {navLinks.map(link => (
-        <a href={link.href} data-spy-link={link.href.slice(1)}>{link.label}</a>
+        <a href={link.href} data-spy-link={link.spy}>{link.label}</a>
       ))}
     </nav>
 
@@ -51,7 +56,7 @@ const brandName = content.hero_title || content.company_name || 'Amara Valley';
     <div class="nav-mobile-inner">
       <p class="nav-mobile-label">Menu</p>
       {navLinks.map(link => (
-        <a href={link.href} data-spy-link={link.href.slice(1)}>
+        <a href={link.href} data-spy-link={link.spy}>
           {link.label}
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -167,12 +172,12 @@ const brandName = content.hero_title || content.company_name || 'Amara Valley';
   .nav-links {
     display: none;
     align-items: center;
-    gap: clamp(14px, 2.2vw, 30px);
+    gap: clamp(10px, 1.7vw, 24px);
   }
   .nav-links a {
     position: relative;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 500;
     color: color-mix(in srgb, var(--color-bg-main) 88%, transparent);
     padding-block: 6px;

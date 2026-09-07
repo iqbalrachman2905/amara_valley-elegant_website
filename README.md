@@ -67,7 +67,18 @@ src/
   assets/dummy/            ← gambar dummy lokal (fallback)
   lib/                     ← api.js, format.js, image.js, paths.js
   pages/index.astro        ← komposisi landing page
+  pages/tim.astro          ← halaman profil tim (sheet Person + foto dummy)
   pages/artikel/           ← listing & detail artikel
 data/snapshot.json         ← cadangan data spreadsheet
 scripts/fetch-snapshot.mjs ← refresh snapshot dari API
 ```
+
+## Halaman Tim Kami (`/tim/`)
+
+Menampilkan profil pegawai dari sheet **Person** (`name`, `position`, `experience`,
+`quote`, `strength`, `photo`). Backend Apps Script saat ini belum mengekspos sheet
+tersebut, jadi halaman memakai data contoh di `snapshot.persons` + foto profil
+dummy (`src/assets/dummy/team/`). Begitu backend menyediakan data `persons`,
+halaman otomatis menampilkannya tanpa perubahan kode — kolom `photo` yang berisi
+link gambar (Google Drive dsb.) otomatis dipakai menggantikan dummy.
+

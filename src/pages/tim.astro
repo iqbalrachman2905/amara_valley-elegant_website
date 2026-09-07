@@ -1,0 +1,367 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import CTABand from '../components/CTABand.astro';
+
+import { getSiteData } from '../lib/api.js';
+import { safeImage, drivePreviewUrl } from '../lib/image.js';
+import { buildWaLink } from '../lib/format.js';
+
+// Foto profil dummy — dipakai selama kolom photo di sheet Person kosong.
+// Begitu sheet diisi & backend mengekspos `persons`, foto asli otomatis
+// menggantikan (atau gambar Drive dipakai saat photo berisi link).
+import dummy1 from '../assets/dummy/team/person-1.jpg';
+import dummy2 from '../assets/dummy/team/person-2.jpg';
+import dummy3 from '../assets/dummy/team/person-3.jpg';
+import dummy4 from '../assets/dummy/team/person-4.jpg';
+
+const DUMMY_PHOTOS = [dummy1, dummy2, dummy3, dummy4];
+
+const { content, persons = [] } = await getSiteData();
+
+const clean = (v) => String(v || '').trim();
+
+function splitStrengths(raw) {
+  const s = clean(raw);
+  if (!s) return [];
+  const parts = s.includes('::') ? s.split('::') : s.split(/,|;/);
+  return parts.map(p => p.trim()).filter(Boolean).slice(0, 5);
+}
+
+function expDigits(raw) {
+  const m = clean(raw).match(/\d+/);
+  return m ? Number(m[0]) : null;
+}
+
+async function personPhoto(photoUrl, idx) {
+  const opts = { width: 760, height: 920, quality: 76, format: 'webp' };
+  if (photoUrl) {
+    try {
+      const r = await safeImage(drivePreviewUrl(photoUrl, 760), { ...opts });
+      if (r) return { src: r.src, width: r.attributes?.width || 760, height: r.attributes?.height || 920 };
+    } catch { /* lanjut dummy */ }
+  }
+  const l = await safeImage(DUMMY_PHOTOS[idx % DUMMY_PHOTOS.length], { ...opts });
+  if (l) return { src: l.src, width: l.attributes?.width || 760, height: l.attributes?.height || 920 };
+  return null;
+}
+
+const people = await Promise.all(
+  persons.map(async (p, i) => ({
+    name: clean(p.name),
+    position: clean(p.position),
+    experience: clean(p.experience),
+    expNum: expDigits(p.experience),
+    quote: clean(p.quote),
+    strengths: splitStrengths(p.strength),
+    photo: await personPhoto(p.photo, i),
+    waLink: buildWaLink(content.whatsapp_number, `Halo, saya ingin konsultasi dengan ${clean(p.name)} (${clean(p.position)}) di ${content.hero_title || 'Amara Valley'}. Boleh dijadwalkan?`)
+  }))
+).then(list => list.filter(p => p.name || p.position));
+
+const waGeneral = buildWaLink(content.whatsapp_number, `Halo, saya ingin bicara dengan tim ${content.company_name || 'Amara Land'} tentang ${content.hero_title || 'Amara Valley'}.`);
+---
+
+<BaseLayout
+  title={`Tim Kami — ${content.hero_title || 'Amara Valley'} | ${content.company_name || 'Amara Land'}`}
+  description={`Kenali tim ${content.company_name || 'Amara Land'} — tenaga pemasaran & layanan konsumen ${content.hero_title || 'Amara Valley'} di ${content.badge_text || 'Kelapa Dua, Depok'}, siap mendampingi konsultasi hingga serah terima kunci.`}
+  companyName={content.company_name}
+  companyPhone={content.footer_phone}
+  waNumber={content.whatsapp_number}
+>
+  <Navbar content={content} />
+
+  <main class="tim-page">
+    <!-- Kepala halaman -->
+    <header class="tim-hero">
+      <div class="container">
+        <p class="eyebrow" data-reveal>Tim Kami</p>
+        <h1 data-reveal style="--reveal-delay: 90ms">
+          Orang-orang di balik<br /><em class="accent-serif">{content.hero_title || 'Amara Valley'}</em>
+        </h1>
+        <div class="tim-hero-row" data-reveal style="--reveal-delay: 180ms">
+          <p class="sec-lead">
+            Dari konsultasi pertama, proses KPR, hingga serah terima kunci —
+            tim {content.company_name || 'Amara Land'} mendampingi Anda di setiap langkah.
+            {content.badge_text ? ` Kami beroperasi dari klaster ${content.badge_text}.` : ''}
+          </p>
+          <a href={waGeneral} target="_blank" rel="noopener noreferrer" class="btn btn-ink btn-sm tim-hero-cta">
+            Bicara dengan Tim
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Daftar profil -->
+    {people.length > 0 ? (
+      <section class="tim-list" aria-label="Profil pegawai">
+        <div class="container">
+          <div class="persons">
+            {people.map((p, i) => (
+              <article class="person" data-reveal style={`--reveal-delay: ${(i % 2) * 90}ms`}>
+                <div class="person-photo">
+                  {p.photo ? (
+                    <figure class="person-figure">
+                      <img src={p.photo.src} alt={p.name ? `Foto ${p.name}` : 'Foto anggota tim'} width={p.photo.width} height={p.photo.height} loading="lazy" />
+                    </figure>
+                  ) : (
+                    <div class="person-figure person-figure-empty" aria-hidden="true">
+                      <span>{(p.name || p.position || '?').trim().charAt(0)}</span>
+                    </div>
+                  )}
+                  {p.expNum && (
+                    <span class="person-exp">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4h8v3M8 11h.01M16 11h.01M8 15h.01M12 15h.01"/></svg>
+                      {p.expNum} tahun
+                    </span>
+                  )}
+                  <span class="person-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                </div>
+
+                <div class="person-body">
+                  {p.position && <p class="person-position">{p.position}</p>}
+                  {p.name && <h2 class="person-name">{p.name}</h2>}
+                  {p.quote && (
+                    <blockquote class="person-quote">
+                      <svg class="quote-mark" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M10 7H6a3 3 0 0 0-3 3v7h7v-7H6.5A1.5 1.5 0 0 1 8 8.5V7h2V7zm11 0h-4a3 3 0 0 0-3 3v7h7v-7h-3.5a1.5 1.5 0 0 1 1.5-1.5V7h2V7z"/></svg>
+                      {p.quote}
+                    </blockquote>
+                  )}
+                  {p.strengths.length > 0 && (
+                    <div class="person-strength">
+                      <p class="person-strength-label">Keunggulan</p>
+                      <ul class="strength-chips">
+                        {p.strengths.map((s) => <li key={s}>{s}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {p.name && (
+                    <a href={p.waLink} target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm person-wa">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.464 3.482 1.345 4.997L2 22l5.117-1.334a9.965 9.965 0 0 0 4.887 1.28h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.928-7.07a9.935 9.935 0 0 0-7.073-2.876zm0 18.184a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.037.792.81-2.96-.194-.304a8.147 8.147 0 0 1-1.247-4.348c0-4.507 3.667-8.174 8.176-8.174 2.183 0 4.235.852 5.78 2.398a8.12 8.12 0 0 1 2.394 5.783c0 4.508-3.667 8.13-8.217 8.13zm4.468-6.12c-.248-.124-1.4-.69-1.616-.768-.217-.078-.375-.116-.533.116-.157.233-.61.769-.747.927-.137.158-.275.178-.51.059-.234-.12-.99-.365-1.885-1.164-.698-.622-1.168-1.388-1.304-1.62-.137-.233-.015-.36.102-.477.105-.105.275-.273.412-.411.137-.137.183-.233.275-.389.091-.156.045-.291-.02-.408-.065-.116-.583-1.404-.799-1.922-.21-.505-.424-.437-.583-.445l-.497-.01c-.172 0-.45.064-.685.32-.234.256-.895.874-.895 2.132 0 1.257.915 2.472 1.042 2.649.128.176 1.797 2.746 4.356 3.852.608.263 1.084.42 1.454.538.626.199 1.195.171 1.645.104.508-.076 1.4-.573 1.6-1.126.198-.553.198-1.026.138-1.126-.06-.1-.217-.16-.451-.279z"/></svg>
+                      Konsultasi dengan {p.name.split(' ')[0]}
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div class="tim-note" data-reveal>
+            <span class="gold-hairline" aria-hidden="true"></span>
+            <p>
+              Foto di atas merupakan <strong>contoh ilustrasi</strong> dan akan diganti dengan foto resmi tim
+              sesuai data sheet <em>Person</em> pada spreadsheet.
+            </p>
+          </div>
+        </div>
+      </section>
+    ) : (
+      <section class="tim-empty">
+        <div class="container">
+          <p class="tim-empty-text">Profil tim sedang dilengkapi — segera hadir.</p>
+        </div>
+      </section>
+    )}
+
+    <CTABand content={content} />
+  </main>
+
+  <Footer content={content} />
+</BaseLayout>
+
+<style>
+  .tim-hero {
+    background: var(--color-bg-paper);
+    padding: clamp(150px, 18vh, 190px) 0 clamp(46px, 6vw, 76px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .tim-hero h1 {
+    font-size: clamp(2.3rem, 5.6vw, 4.4rem);
+    margin: 18px 0 26px;
+  }
+  .tim-hero h1 em { font-size: 1.06em; }
+  .tim-hero-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px 34px;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .tim-hero-row .sec-lead { max-width: 58ch; }
+
+  .tim-list {
+    background: var(--color-bg-main);
+    padding-block: clamp(28px, 4vw, 54px) clamp(64px, 9vw, 110px);
+  }
+  .persons { display: grid; gap: clamp(46px, 6vw, 72px); }
+
+  .person {
+    display: grid;
+    gap: clamp(26px, 4vw, 54px);
+    padding-block: clamp(26px, 3.4vw, 44px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .person:first-of-type { border-top: 1px solid var(--color-border); }
+  @media (min-width: 960px) {
+    .person {
+      grid-template-columns: minmax(240px, 360px) 1fr;
+      align-items: center;
+    }
+    .person:nth-child(even) .person-photo { order: 2; }
+    .person:nth-child(even) .person-body { order: 1; text-align: right; }
+    .person:nth-child(even) .person-body > * { margin-inline-start: auto; }
+  }
+
+  .person-photo { position: relative; }
+  .person-figure {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 5 / 6;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-bg-paper);
+    box-shadow: var(--shadow-lg);
+  }
+  .person-figure::before {
+    content: '';
+    position: absolute;
+    inset: -12px -12px auto auto;
+    width: 40%;
+    height: 30%;
+    border-top: 1px solid var(--color-secondary);
+    border-right: 1px solid var(--color-secondary);
+    border-radius: 0 var(--radius-md) 0 0;
+    z-index: 2;
+  }
+  .person-figure img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: transform 1.2s var(--ease-out);
+  }
+  .person:hover .person-figure img { transform: scale(1.035); }
+  .person-figure-empty {
+    display: grid;
+    place-items: center;
+    color: var(--color-secondary);
+  }
+  .person-figure-empty span {
+    font-family: var(--font-display);
+    font-size: 5rem;
+  }
+  .person-exp {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--color-bg-main);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-full);
+    padding: 7px 15px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-primary);
+  }
+  .person-exp svg { color: var(--color-secondary); }
+  .person-index {
+    position: absolute;
+    right: 12px;
+    top: -18px;
+    font-family: var(--font-display);
+    font-size: 3.4rem;
+    line-height: 1;
+    color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    z-index: 3;
+  }
+
+  .person-body { max-width: 640px; display: flex; flex-direction: column; align-items: flex-start; }
+  .person-position {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    color: var(--color-secondary);
+    margin-bottom: 10px;
+  }
+  .person-name {
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    margin-bottom: 16px;
+  }
+  .person-quote {
+    margin: 0 0 22px;
+    position: relative;
+    padding-left: 30px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.04rem, 1.5vw, 1.2rem);
+    line-height: var(--leading-snug);
+    color: var(--color-primary);
+  }
+  .quote-mark {
+    position: absolute;
+    left: 0;
+    top: 2px;
+    color: var(--color-secondary);
+    opacity: 0.9;
+  }
+  .person-strength { margin-bottom: 24px; }
+  .person-strength-label {
+    font-size: 0.64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    color: var(--color-muted);
+    margin-bottom: 10px;
+  }
+  .strength-chips {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .strength-chips li {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 6px 14px;
+    background: var(--color-bg-main);
+  }
+  @media (min-width: 960px) {
+    .person:nth-child(even) .person-quote { padding-left: 0; padding-right: 30px; }
+    .person:nth-child(even) .quote-mark { left: auto; right: 0; }
+    .person:nth-child(even) .strength-chips { justify-content: flex-end; }
+  }
+
+  .tim-note {
+    margin-top: clamp(36px, 5vw, 56px);
+    display: grid;
+    gap: 16px;
+  }
+  .tim-note p {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    max-width: 56ch;
+  }
+  .tim-note strong { color: var(--color-primary); }
+
+  .tim-empty {
+    background: var(--color-bg-main);
+    padding-block: 90px;
+  }
+  .tim-empty-text {
+    text-align: center;
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.2rem;
+  }
+</style>
