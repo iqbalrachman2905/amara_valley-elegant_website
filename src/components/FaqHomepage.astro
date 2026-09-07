@@ -1,170 +1,116 @@
 ---
-const { content } = Astro.props;
-const faqKeys = Object.keys(content).filter(key => key.startsWith('faq_home_'));
-const faqs = faqKeys.map(key => {
-  const [question, answer] = content[key].split('::');
-  return { question, answer };
-}).filter(item => item.question && item.answer);
+import { buildWaLink } from '../lib/format.js';
 
-// Split jadi 2 kolom: kolom kiri baca top-down dulu, baru kolom kanan.
-const half = Math.ceil(faqs.length / 2);
-const colLeft = faqs.slice(0, half);
-const colRight = faqs.slice(half);
+const { content } = Astro.props;
+const waLink = buildWaLink(content.whatsapp_number, `Halo, saya punya pertanyaan lain tentang ${content.hero_title || 'Amara Valley'} yang belum ada di FAQ.`);
+
+const faqKeys = Object.keys(content)
+  .filter((key) => /^faq_home_\d+$/.test(key))
+  .sort((a, b) => Number(a.split('_')[2]) - Number(b.split('_')[2]));
+
+const faqs = faqKeys
+  .map((key, i) => {
+    const [question, answer] = String(content[key] || '').split('::');
+    const cleanQ = String(question || '').replace(/^\s*\d+[.)]\s*/, '').trim();
+    return cleanQ && answer ? { no: i + 1, question: cleanQ, answer: answer.trim() } : null;
+  })
+  .filter(Boolean);
 ---
 
-<section id="faq-home" class="faq-section">
-  <div class="container">
-    <div class="section-heading" data-reveal>
-      <span class="eyebrow">Bantuan</span>
-      <h2>Pertanyaan Seputar PKP2</h2>
-    </div>
-
-    <div class="faq-grid">
-      <div class="faq-col">
-        {colLeft.map((faq) => (
-          <details class="faq-item">
-            <summary>
-              <span class="faq-question">{faq.question}</span>
-              <span class="faq-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"></path>
-                </svg>
-              </span>
-            </summary>
-            <div class="faq-answer">
-              <div class="faq-answer-inner">{faq.answer}</div>
-            </div>
-          </details>
-        ))}
+{faqs.length > 0 && (
+  <section id="faq" class="faq">
+    <div class="container faq-grid">
+      <div class="faq-intro" data-reveal>
+        <p class="eyebrow">FAQ</p>
+        <h2>Pertanyaan yang sering diajukan</h2>
+        <p class="sec-lead">Tidak menemukan jawaban Anda? Tim kami siap membantu lewat WhatsApp — biasanya membalas dalam beberapa menit pada jam kerja.</p>
+        <div class="faq-actions">
+          <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-ink btn-sm">Tanya Langsung</a>
+        </div>
       </div>
 
-      <div class="faq-col">
-        {colRight.map((faq) => (
+      <div class="faq-list" data-reveal style="--reveal-delay: 120ms">
+        {faqs.map((f) => (
           <details class="faq-item">
             <summary>
-              <span class="faq-question">{faq.question}</span>
-              <span class="faq-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"></path>
-                </svg>
-              </span>
+              <span class="faq-no">{String(f.no).padStart(2, '0')}</span>
+              <span class="faq-q">{f.question}</span>
+              <span class="faq-toggle" aria-hidden="true"></span>
             </summary>
-            <div class="faq-answer">
-              <div class="faq-answer-inner">{faq.answer}</div>
-            </div>
+            <div class="faq-a"><p>{f.answer}</p></div>
           </details>
         ))}
       </div>
     </div>
-  </div>
-</section>
+  </section>
+)}
 
 <style>
-  details > summary {
-    list-style: none;
-  }
-  details > summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .faq-section {
-    padding-block: var(--space-xl);
+  .faq {
     background: var(--color-bg-paper);
+    padding-block: clamp(64px, 9vw, 116px);
   }
-  .section-heading {
-    text-align: center;
-    margin-bottom: var(--space-lg);
-  }
-  .eyebrow {
-    display: block;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-secondary);
-    margin-bottom: var(--space-xs);
-  }
-  .section-heading h2 {
-    font-size: clamp(1.6rem, 3vw, 2.2rem);
-    font-weight: 800;
-    color: var(--color-primary);
-  }
+  .faq-grid { display: grid; gap: clamp(34px, 5vw, 70px); }
+  .faq-intro { max-width: 430px; }
+  .faq-intro h2 { margin: 16px 0 18px; font-size: clamp(1.8rem, 3.4vw, 2.7rem); }
+  .faq-actions { margin-top: 26px; }
 
-  .faq-grid {
-    max-width: 1000px;
-    margin-inline: auto;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-md);
-    align-items: start;
-  }
-  .faq-col {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
-
-  .faq-item {
-    background: var(--color-bg-main);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-card);
-    overflow: hidden;
-    transition: box-shadow var(--duration-slow) var(--ease-out);
-  }
-  .faq-item:hover {
-    box-shadow: var(--shadow-soft);
-  }
+  .faq-list { border-top: 1px solid var(--color-border); }
+  .faq-item { border-bottom: 1px solid var(--color-border); }
   .faq-item summary {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-md);
+    gap: clamp(14px, 2vw, 22px);
     cursor: pointer;
+    list-style: none;
+    padding-block: clamp(16px, 2.2vw, 24px);
+    transition: background var(--duration-normal) var(--ease-out);
   }
-  .faq-question {
-    font-weight: 700;
-    font-size: 1rem;
-    color: var(--color-primary);
-    transition: color var(--duration-slow) var(--ease-out);
-  }
-  .faq-item:hover .faq-question {
-    color: var(--color-secondary);
-  }
-  .faq-icon {
-    flex-shrink: 0;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--color-gold-soft);
-    color: var(--color-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform var(--duration-slow) var(--ease-out);
-  }
-  .faq-icon svg {
-    width: 18px;
-    height: 18px;
-  }
-  .faq-item[open] .faq-icon {
-    transform: rotate(180deg);
-  }
-  .faq-answer {
-    padding: 0 var(--space-md) var(--space-md);
-  }
-  .faq-answer-inner {
-    padding-top: var(--space-sm);
-    border-top: var(--border-width) solid var(--color-border);
-    color: var(--color-navy-soft);
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary:hover { background: color-mix(in srgb, var(--color-bg-paper) 55%, transparent); }
+  .faq-no {
+    font-family: var(--font-display);
     font-size: 0.9rem;
-    line-height: 1.6;
+    color: var(--color-secondary);
+    flex: none;
+    min-width: 30px;
   }
-
-  @media (max-width: 767px) {
-    .faq-grid {
-      grid-template-columns: 1fr;
-    }
+  .faq-q {
+    flex: 1;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+    color: var(--color-primary);
+  }
+  .faq-toggle {
+    flex: none;
+    position: relative;
+    width: 15px;
+    height: 15px;
+    margin-right: 4px;
+  }
+  .faq-toggle::before,
+  .faq-toggle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1.6px;
+    background: var(--color-secondary);
+    transition: transform var(--duration-normal) var(--ease-out);
+  }
+  .faq-toggle::after { transform: rotate(90deg); }
+  .faq-item[open] .faq-toggle::after { transform: rotate(0deg); }
+  .faq-a {
+    padding: 0 clamp(44px, 8vw, 90px) clamp(18px, 2vw, 24px) 44px;
+  }
+  .faq-a p {
+    color: var(--color-muted);
+    line-height: var(--leading-relaxed);
+    max-width: 62ch;
+  }
+  @media (min-width: 1024px) {
+    .faq-grid { grid-template-columns: 0.75fr 1.25fr; }
+    .faq-intro { position: sticky; top: 120px; align-self: start; }
   }
 </style>

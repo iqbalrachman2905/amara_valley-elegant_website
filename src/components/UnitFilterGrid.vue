@@ -90,6 +90,11 @@ const compareUnits = computed(() => props.units.filter(u => compareIds.value.inc
 
 function chipLabel(f) { return f === 'Semua' ? 'Semua' : statusStyle(f).label; }
 function unitWaLink(unit) { return buildWaLink(props.waNumber, `Halo, saya tertarik dengan Tipe ${unit.tipe} (${formatRupiah(unit.harga)}), boleh info lebih lanjut?`); }
+// Jaga-jaga ganda: deskripsi berbentuk kode hex/teknis tidak ditampilkan.
+function unitDesc(unit) {
+  const s = String(unit.deskripsi || '').trim();
+  return /^[0-9A-Fa-f\s-]{8,}$/.test(s) ? '' : s;
+}
 function toggleCompare(unit) {
   const idx = compareIds.value.indexOf(unit.id);
   if (idx !== -1) { compareIds.value.splice(idx, 1); return; }
@@ -167,7 +172,7 @@ function monthlyFor(unit) { return estimateMonthlyInstallment(unit.harga, { dpPe
           </div>
           <div class="unit-body">
             <h3>Tipe {{ unit.tipe }}</h3>
-            <p v-if="unit.deskripsi" class="unit-desc">{{ unit.deskripsi }}</p>
+            <p v-if="unitDesc(unit)" class="unit-desc">{{ unitDesc(unit) }}</p>
             <ul class="unit-specs">
               <li v-if="unit.luas_tanah">LT {{ unit.luas_tanah }} m²</li>
               <li v-if="unit.luas_bangunan">LB {{ unit.luas_bangunan }} m²</li>
@@ -351,7 +356,7 @@ function monthlyFor(unit) { return estimateMonthlyInstallment(unit.harga, { dpPe
 .unit-wa-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
 
 /* Compare Bar & Modal styling (Tetap) */
-.compare-bar { position: fixed; bottom: calc(var(--space-md) + 64px); left: var(--space-md); right: var(--space-md); max-width: 420px; margin-inline: auto; background: rgba(20, 33, 61, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); color: var(--color-white); border-radius: 999px; padding: 10px 10px 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); z-index: 54; }
+.compare-bar { position: fixed; bottom: calc(var(--space-md) + 64px); left: var(--space-md); right: var(--space-md); max-width: 420px; margin-inline: auto; background: rgba(24, 20, 13, 0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); color: var(--color-white); border-radius: 999px; padding: 10px 10px 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); z-index: 54; }
 .compare-bar-info { display: flex; flex-direction: column; min-width: 0; }
 .compare-bar-info strong { font-size: 0.85rem; }
 .compare-bar-info span { font-size: 0.72rem; color: color-mix(in srgb, var(--color-white) 70%, transparent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

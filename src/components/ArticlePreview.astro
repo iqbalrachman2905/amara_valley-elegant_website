@@ -2,81 +2,55 @@
 import ArticleCard from './ArticleCard.astro';
 import { withBase } from '../lib/paths.js';
 
-const { articles } = Astro.props; // sudah { slug, title, published_at, coverSrc }
-const latest = articles.slice(0, 3);
+const { articles, content } = Astro.props;
+const latest = (articles || []).slice(0, 3);
 ---
 
 {latest.length > 0 && (
-  <section id="artikel" class="article-section">
+  <section id="artikel" class="artikel-preview">
     <div class="container">
-      <div class="section-heading">
-        <span class="eyebrow">Artikel</span>
-        <h2>Tips & Info Seputar Hunian</h2>
+      <div class="artikel-head" data-reveal>
+        <div>
+          <p class="eyebrow">Artikel</p>
+          <h2>Wawasan seputar <em class="accent-serif">rumah</em></h2>
+        </div>
+        <p class="artikel-note">Tips membeli rumah, KPR, hingga perkembangan kawasan — dirangkum untuk Anda.</p>
       </div>
 
-      <div class="article-scroll">
-        {latest.map((a, i) => (
-      <div class="article-scroll-item" data-reveal style={`--reveal-delay: ${i * 110}ms`}>
-            <ArticleCard article={a} coverSrc={a.coverSrc} />
-          </div>
-        ))}
+      <div class="artikel-grid">
+        {latest.map((a) => <ArticleCard article={a} coverSrc={a.coverSrc} />)}
       </div>
 
-      <div class="article-cta">
-        <a href={withBase('artikel/')} class="btn btn-outline-dark">Lihat Semua Artikel</a>
+      <div class="artikel-more-wrap" data-reveal>
+        <a href={withBase('artikel/')} class="btn btn-outline">
+          Lihat Semua Artikel
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>
+        </a>
       </div>
     </div>
   </section>
 )}
 
 <style>
-  .article-section {
-    padding-block: var(--space-xl);
-    background: var(--color-paper);
+  .artikel-preview {
+    background: var(--color-bg-paper);
+    padding-block: clamp(56px, 8vw, 104px);
   }
-  .section-heading {
-    text-align: center;
-    margin-bottom: var(--space-lg);
+  .artikel-head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: clamp(30px, 4vw, 46px);
   }
-  .eyebrow {
-    display: block;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-gold);
-    margin-bottom: 6px;
-  }
-  .section-heading h2 {
-    font-size: clamp(1.6rem, 3vw, 2.2rem);
-  }
-  .article-scroll {
+  .artikel-head h2 { margin-top: 14px; font-size: clamp(1.8rem, 3.4vw, 2.7rem); }
+  .artikel-note { max-width: 40ch; color: var(--color-muted); font-size: 0.92rem; }
+  .artikel-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-md);
+    gap: clamp(24px, 4vw, 46px);
   }
-  .article-cta {
-    text-align: center;
-    margin-top: var(--space-lg);
-  }
-  .btn-outline-dark {
-    padding: 13px 30px;
-  }
-
-  /* Homepage bukan tempat baca artikel panjang - di mobile cukup scroll
-     horizontal 3 kartu, biar hemat tinggi halaman & tetap kelihatan cepat. */
-  @media (max-width: 720px) {
-    .article-scroll {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      gap: var(--space-sm);
-      margin-inline: calc(var(--space-sm) * -1);
-      padding-inline: var(--space-sm);
-    }
-    .article-scroll-item {
-      flex: 0 0 78%;
-      scroll-snap-align: start;
-    }
+  .artikel-more-wrap { margin-top: clamp(30px, 4vw, 46px); }
+  @media (min-width: 860px) {
+    .artikel-head { flex-direction: row; justify-content: space-between; align-items: flex-end; }
+    .artikel-grid { grid-template-columns: repeat(3, 1fr); }
   }
 </style>

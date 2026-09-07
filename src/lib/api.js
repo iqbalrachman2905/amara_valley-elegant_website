@@ -5,6 +5,17 @@
 let cachedSiteData = null;
 const articleCache = new Map();
 
+// Sheet "Person" (name, position, experience, quote, strength, photo) belum
+// diekspos backend Apps Script (action=persons → Unknown action). Pipeline:
+// begitu backend menyediakan `persons`, data langsung dipakai. Selama belum
+// ada, kita pakai contoh placeholder dari snapshot (foto dummy) — nanti
+// cukup ganti isi sheet & backend, tanpa ubah kode.
+function withPersons(d) {
+  if (!d) return d;
+  if (Array.isArray(d.persons)) return d;
+  return { ...d, persons: snapshot?.persons || [] };
+}
+
 const API_URL = 'https://script.google.com/macros/s/AKfycbyLnKTEuhejWK2KmNHisXKkJrnTmMa_fZ00yUnkzuFN4ItoSlS7awYhqImdyKUVaZPZ/exec';
 
 // Snapshot data terakhir yang berhasil diambil (disimpan manual di
@@ -54,16 +65,16 @@ export async function getSiteData() {
       throw new Error(data.error);
     }
 
-    cachedSiteData = data;
-    return data; // { content, units, gallery, articles, generated_at }
+    cachedSiteData = withPersons(data);
+    return cachedSiteData; // { content, units, gallery, articles, testimonials, persons?, generated_at }
   } catch (err) {
     // Apps Script gagal dijangkau - fallback ke snapshot lokal biar build/
     // dev tetap jalan (data mungkin stale, tapi lebih baik daripada error).
     if (snapshot?.content) {
       console.warn(`⚠️  Fetch Apps Script gagal (${err.message}). Memakai snapshot lokal dari ${snapshot.generated_at}.`);
       usingSnapshot = true;
-      cachedSiteData = snapshot;
-      return snapshot;
+      cachedSiteData = withPersons(snapshot);
+      return cachedSiteData;
     }
     throw new Error(`Gagal fetch data dari Apps Script: ${err.message}. Cek apakah deployment masih aktif: ${API_URL}`);
   }

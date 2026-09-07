@@ -2,7 +2,7 @@
 import { buildWaLink } from '../lib/format.js';
 
 const { waNumber } = Astro.props;
-const waLink = buildWaLink(waNumber, 'Halo, saya mau tanya-tanya tentang Puri Kencana Permai II Extension.');
+const waLink = buildWaLink(waNumber, 'Halo, saya mau tanya-tanya tentang Amara Valley (Kelapa Dua, Depok).');
 ---
 
 {waNumber && (
@@ -19,18 +19,38 @@ const waLink = buildWaLink(waNumber, 'Halo, saya mau tanya-tanya tentang Puri Ke
     position: fixed;
     bottom: var(--space-md);
     right: var(--space-md);
-    width: 52px;
-    height: 52px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
-    background: #25D366;
-    color: var(--color-white);
+    background: var(--color-dark);
+    color: var(--color-gold-light);
     display: grid;
     place-items: center;
-    box-shadow: var(--shadow-soft);
+    box-shadow: 0 14px 34px color-mix(in srgb, var(--color-dark) 42%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-gold-light) 45%, transparent);
     z-index: var(--z-toast);
-    transition: transform var(--duration-fast) var(--ease-out);
+    transition: transform var(--duration-fast) var(--ease-spring), background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+  }
+  .sticky-wa::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 35%, transparent);
+    opacity: 0;
+    animation: wa-pulse 2.6s var(--ease-out) infinite;
   }
   .sticky-wa:hover {
-    transform: scale(1.06);
+    transform: scale(1.07);
+    background: var(--color-primary);
+    color: var(--color-bg-main);
+  }
+  @keyframes wa-pulse {
+    0% { opacity: 0.7; transform: scale(0.9); }
+    70% { opacity: 0; transform: scale(1.15); }
+    100% { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sticky-wa::before { animation: none; opacity: 0.35; }
   }
 </style>

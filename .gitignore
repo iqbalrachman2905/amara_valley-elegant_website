@@ -1,0 +1,12 @@
+# Dependencies & hasil build
+node_modules/
+dist/
+.astro/
+
+# Log & sistem
+*.log
+.DS_Store
+
+# Env
+.env
+.env.*

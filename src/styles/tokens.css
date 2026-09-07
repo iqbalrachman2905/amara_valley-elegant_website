@@ -1,108 +1,111 @@
 /* ========================================================================= */
-/* 🟢 ZONE A — TEMA PROYEK (AI BOLEH UBAH NILAI DI SINI)                     */
-/* Instruksi buat AI: HANYA ubah value (warna hex, nama font). JANGAN ubah   */
-/* nama variabel (--nama-var), jangan tambah/hapus baris.                    */
+/* 🟢 ZONE A — TEMA PROYEK AMARA VALLEY                                      */
+/* Direction: Quiet Luxury 2026 — warm ivory, generous whitespace, espresso  */
+/* ink, restrained antique-gold accents, editorial serif typography.         */
 /* ========================================================================= */
 :root {
-  /* 1. WARNA BRAND (1 sumber kebenaran) */
-  --color-primary: #102A43;       /* Contrast ratio: 14.9:1 */
-  --color-secondary: #DDAE6F;     /* Gold solid untuk highlight & tombol */
-  
+  /* 1. WARNA BRAND */
+  --color-primary: #28231B;        /* ink espresso — teks utama & permukaan gelap */
+  --color-secondary: #8F7241;      /* antique gold redup — aksen tipis (label, garis) */
+  --color-gold-deep: #7A6137;      /* gold tua untuk teks kecil di atas ivory (contrast-safe) */
+  --color-gold-light: #C9AE7E;     /* champagne terang untuk elemen di atas permukaan gelap */
+
   /* 2. BACKGROUND */
-  --color-bg-main: #FFFFFF;       /* background dasar website */
-  --color-bg-paper: #F2F5F8;      /* background section alternatif/kartu */
-  
-  /* 3. TIPOGRAFI (Cocokkan dengan @fontsource imports di BaseLayout) */
+  --color-bg-main: #FAF8F3;        /* warm ivory — dasar situs (banyak white space) */
+  --color-bg-paper: #F2EEE4;       /* warm sand — section selang-seling / kartu */
+  --color-dark: #211D15;           /* espresso pekat — band promo, footer, hero overlay */
+
+  /* 3. TIPOGRAFI */
   --font-display: 'Playfair Display', Georgia, serif;
-  --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
-  
-  /* 3b. TIPOGRAFI SKALA (Heading & text sizes) */
-  --text-h1: clamp(2.2rem, 6vw, 4rem);
-  --text-h2: clamp(1.6rem, 4vw, 2.5rem);
-  --text-h3: clamp(1.2rem, 3vw, 1.75rem);
+  --font-body: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif;
+
+  --text-h1: clamp(2.5rem, 6.4vw, 4.75rem);
+  --text-h2: clamp(1.85rem, 3.4vw, 2.9rem);
+  --text-h3: clamp(1.2rem, 1.9vw, 1.55rem);
   --text-body: 1rem;
   --text-small: 0.875rem;
   --text-xs: 0.75rem;
-  --leading-tight: 1.2;
-  --leading-normal: 1.6;
-  --leading-relaxed: 1.8;
-  --tracking-tight: -0.02em;
-  --tracking-wide: 0.08em;
+  --leading-tight: 1.12;
+  --leading-snug: 1.35;
+  --leading-normal: 1.7;
+  --leading-relaxed: 1.85;
+  --tracking-tight: -0.015em;
+  --tracking-wide: 0.22em;
 
-  /* 4. BENTUK (Radius corner) */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --radius-full: 9999px;
+  /* 4. BENTUK — sengaja kecil & tajam: kesan editorial klasik */
+  --radius-sm: 3px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 26px;
+  --radius-full: 999px;
 
   /* 5. KETEBALAN & INTENSITAS */
   --border-width: 1px;
-  --shadow-intensity-soft: 10%;    /* dipakai shadow gede (modal, floating bar) */
-  --shadow-intensity-card: 5%;    /* dipakai shadow kecil (card, item) */
+  --shadow-intensity-soft: 9%;
+  --shadow-intensity-card: 5%;
 
-  /* 7. ANIMASI & TRANSISI */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* 7. ANIMASI */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-fast: 150ms;
-  --duration-normal: 250ms;
-  --duration-slow: 400ms;
+  --duration-normal: 260ms;
+  --duration-slow: 560ms;
 
-  /* 6. GLASSMORPHISM (Efek kaca premium) */
-  --glass-blur: 16px;
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-bg-hero: rgba(255, 255, 255, 0.12);
-  --glass-border: rgba(255, 255, 255, 0.22);
-  --glass-border-hero: rgba(255, 255, 255, 0.18);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  /* 6. KACA PREMIUM (jarang dipakai — hero & navbar) */
+  --glass-blur: 18px;
+  --glass-bg: rgba(250, 248, 243, 0.78);
+  --glass-bg-hero: rgba(24, 20, 13, 0.32);
+  --glass-border: rgba(40, 35, 27, 0.08);
+  --glass-border-hero: rgba(250, 248, 243, 0.22);
+  --glass-shadow: 0 18px 50px rgba(40, 35, 27, 0.12);
 }
 /* ================= END OF ZONE A ========================================= */
 
-
 /* ========================================================================= */
-/* 🔴 ZONE B — CORE ENGINE (JANGAN DIUBAH AI!)                               */
-/* Status badge, shadow, spacing, reset, dan ALIAS untuk komponen lama       */
+/* 🔴 ZONE B — CORE ENGINE + ALIAS BACKWARD-COMPAT                           */
 /* ========================================================================= */
 :root {
-  /* --- ALIAS KOMPONEN LAMA (Biar gak break / undefined) --- */
+  /* ALIAS komponen lama (var nama lama tetap berfungsi) */
   --color-navy: var(--color-primary);
   --color-gold: var(--color-secondary);
   --color-white: var(--color-bg-main);
   --color-paper: var(--color-bg-paper);
-  
-  /* --- WARNA TURUNAN OTOMATIS DENGAN COLOR-MIX --- */
-  --color-navy-soft: color-mix(in srgb, var(--color-primary) 70%, white);
-  --color-gold-soft: color-mix(in srgb, var(--color-secondary) 25%, white);
-  --color-border: color-mix(in srgb, var(--color-primary) 12%, white);
-  
-  /* --- STATUS BADGE (Universal) --- */
-  --color-status-available: #2F7A4D;
-  --color-status-sold: #8A8F98;
-  --color-status-ready: #1B6FA8;
-  --color-status-progress: #B8935F;
-  
-  /* --- SHADOW SKALA --- */
+  --color-dark-band: var(--color-dark);
+
+  /* Warna turunan otomatis */
+  --color-navy-soft: color-mix(in srgb, var(--color-primary) 66%, white);
+  --color-gold-soft: color-mix(in srgb, var(--color-secondary) 13%, white);
+  --color-border: color-mix(in srgb, var(--color-primary) 14%, white);
+  --color-muted: color-mix(in srgb, var(--color-primary) 62%, white);
+
+  /* STATUS BADGE — palet tenang/elegan */
+  --color-status-available: #5D7A4E;
+  --color-status-sold: #A79E8E;
+  --color-status-ready: #5F7E93;
+  --color-status-progress: #8F7241;
+
+  /* SHADOW */
   --shadow-xs: 0 1px 2px color-mix(in srgb, var(--color-primary) 5%, transparent);
-  --shadow-sm: 0 2px 8px color-mix(in srgb, var(--color-primary) 8%, transparent);
-  --shadow-md: 0 4px 16px color-mix(in srgb, var(--color-primary) var(--shadow-intensity-card), transparent);
-  --shadow-lg: 0 8px 32px color-mix(in srgb, var(--color-primary) var(--shadow-intensity-soft), transparent);
-  --shadow-xl: 0 16px 48px color-mix(in srgb, var(--color-primary) 14%, transparent);
-  /* Aliases untuk backward compat */
+  --shadow-sm: 0 2px 10px color-mix(in srgb, var(--color-primary) 7%, transparent);
+  --shadow-md: 0 6px 20px color-mix(in srgb, var(--color-primary) var(--shadow-intensity-card), transparent);
+  --shadow-lg: 0 14px 44px color-mix(in srgb, var(--color-primary) var(--shadow-intensity-soft), transparent);
+  --shadow-xl: 0 24px 70px color-mix(in srgb, var(--color-primary) 12%, transparent);
   --shadow-soft: var(--shadow-lg);
   --shadow-card: var(--shadow-md);
 
-  /* --- SPACING SCALE --- */
+  /* SPACING — lebih lega (white space) */
   --space-2xs: 4px;
-  --space-xs: 8px;
-  --space-sm: 16px;
-  --space-md: 24px;
-  --space-lg: 48px;
-  --space-xl: 80px;
-  --space-2xl: 120px;
-  --container-width: 1200px;
+  --space-xs: 10px;
+  --space-sm: 18px;
+  --space-md: 28px;
+  --space-lg: 52px;
+  --space-xl: 96px;
+  --space-2xl: 150px;
+  --container-width: 1190px;
+  --container-narrow: 880px;
 
-  /* --- Z-INDEX SCALE --- */
+  /* Z-INDEX */
   --z-dropdown: 10;
   --z-sticky: 20;
   --z-navbar: 50;
@@ -110,67 +113,107 @@
   --z-modal: 100;
   --z-toast: 150;
 
-  /* --- FOCUS RING --- */
-  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 40%, transparent);
+  /* FOCUS RING */
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 38%, transparent);
   --focus-ring-offset: 2px;
 }
 
-/* --- GLOBAL BASE STYLES --- */
+/* ------------------------- GLOBAL BASE ------------------------- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
   font-family: var(--font-body);
   color: var(--color-primary);
   background: var(--color-bg-main);
-  line-height: 1.6;
+  line-height: var(--leading-normal);
+  font-size: var(--text-body);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 h1, h2, h3, h4 {
   font-family: var(--font-display);
   line-height: var(--leading-tight);
-  font-weight: 600;
+  font-weight: 500;
+  color: var(--color-primary);
   text-wrap: balance;
 }
-h1 { font-size: var(--text-h1); }
-h2 { font-size: var(--text-h2); }
+h1 { font-size: var(--text-h1); letter-spacing: var(--tracking-tight); }
+h2 { font-size: var(--text-h2); letter-spacing: var(--tracking-tight); }
 h3 { font-size: var(--text-h3); }
-.prose p {
-  text-wrap: pretty;
-}
+p { text-wrap: pretty; }
 img { max-width: 100%; display: block; }
+a { color: inherit; }
+
 .container {
   max-width: var(--container-width);
   margin-inline: auto;
   padding-inline: var(--space-sm);
 }
+.container-narrow {
+  max-width: var(--container-narrow);
+  margin-inline: auto;
+  padding-inline: var(--space-sm);
+}
 
-/* --- AKSESIBILITAS & ANIMASI --- */
+/* Serif italic — aksen editorial 2026 */
+.accent-serif {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--color-secondary);
+}
+
+/* Kicker (label kecil atas judul section) */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-secondary);
+}
+.eyebrow::before {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: var(--color-secondary);
+  opacity: 0.85;
+}
+
+/* Lead paragraph section */
+.sec-lead {
+  font-size: 1.06rem;
+  line-height: var(--leading-relaxed);
+  color: var(--color-muted);
+  max-width: 56ch;
+}
+
+/* ------------------------- AKSESIBILITAS ------------------------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 a:focus-visible, button:focus-visible {
   outline: 2px solid var(--color-secondary);
   outline-offset: var(--focus-ring-offset);
   box-shadow: var(--focus-ring);
 }
+section[id], div[id] { scroll-margin-top: 86px; }
+::selection { background: color-mix(in srgb, var(--color-secondary) 30%, transparent); color: var(--color-primary); }
 
-/* --- POLISH KECL --- */
-/* Section target anchor gak ketutupan navbar fixed */
-section[id] { scroll-margin-top: 72px; }
-/* Warna teks ter-select ikut brand */
-::selection { background: color-mix(in srgb, var(--color-secondary) 45%, transparent); color: var(--color-primary); }
-
-/* --- SCROLL REVEAL ------------------------------------------------------ */
-/* Elemen ber-atribut data-reveal fade-up pas masuk viewport. Hidden state
-   cuma aktif kalau JS jalan (html.js-reveal) supaya tanpa-JS konten tetap
-   keliatan. Stagger via style="--reveal-delay: .1s". */
+/* ------------------------- SCROLL REVEAL ------------------------- */
 html.js-reveal [data-reveal] {
   opacity: 0;
-  transform: translateY(26px);
+  transform: translateY(24px);
   transition:
-    opacity 0.7s var(--ease-out) var(--reveal-delay, 0s),
-    transform 0.7s var(--ease-out) var(--reveal-delay, 0s);
+    opacity 0.85s var(--ease-out) var(--reveal-delay, 0s),
+    transform 0.85s var(--ease-out) var(--reveal-delay, 0s);
   will-change: opacity, transform;
 }
 html.js-reveal [data-reveal].is-revealed {
@@ -178,9 +221,7 @@ html.js-reveal [data-reveal].is-revealed {
   transform: none;
 }
 
-/* --- TOMBOL PREMIUM (global utility) ----------------------------------- */
-/* Pill dengan gradient gold + sheen sweep pas hover. Dipakai lewat
-   class="btn btn-gold" dsb; komponen tinggal nambah ukuran sendiri. */
+/* ------------------------- TOMBOL ------------------------- */
 .btn {
   position: relative;
   display: inline-flex;
@@ -188,39 +229,63 @@ html.js-reveal [data-reveal].is-revealed {
   justify-content: center;
   gap: 10px;
   font-family: var(--font-body);
-  font-weight: 700;
+  font-weight: 600;
+  font-size: 0.95rem;
   text-decoration: none;
   border: none;
   cursor: pointer;
-  overflow: hidden;
   white-space: nowrap;
   border-radius: var(--radius-full);
+  padding: 0.8rem 1.9rem;
+  overflow: hidden;
   transition:
     transform var(--duration-normal) var(--ease-spring),
     box-shadow var(--duration-normal) var(--ease-out),
-    filter var(--duration-normal) var(--ease-out);
+    background-color var(--duration-normal) var(--ease-out),
+    border-color var(--duration-normal) var(--ease-out),
+    color var(--duration-normal) var(--ease-out);
 }
 .btn::after {
-  /* Sheen sweep */
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.45) 50%, transparent 60%);
-  transform: translateX(-120%);
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.28) 50%, transparent 60%);
+  transform: translateX(-130%);
   transition: transform 0.7s var(--ease-out);
   pointer-events: none;
 }
-.btn:hover::after { transform: translateX(120%); }
-.btn:active { transform: translateY(0) scale(0.98); }
+.btn:hover::after { transform: translateX(130%); }
+.btn:active { transform: translateY(0) scale(0.985); }
 
 .btn-gold {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-secondary) 72%, white) 0%, var(--color-secondary) 45%, color-mix(in srgb, var(--color-secondary) 82%, black) 100%);
-  color: var(--color-primary);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-secondary) 35%, transparent);
+  background: linear-gradient(135deg, #B1905B 0%, var(--color-secondary) 55%, var(--color-gold-deep) 100%);
+  color: #FDFBF6;
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--color-secondary) 34%, transparent);
 }
 .btn-gold:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px color-mix(in srgb, var(--color-secondary) 48%, transparent);
+  box-shadow: 0 16px 36px color-mix(in srgb, var(--color-secondary) 44%, transparent);
+}
+
+.btn-ink {
+  background: var(--color-dark);
+  color: var(--color-bg-main);
+}
+.btn-ink:hover {
+  transform: translateY(-2px);
+  background: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 38%, transparent);
+}
+.btn-outline:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-bg-main);
 }
 
 .btn-ghost-light {
@@ -229,26 +294,15 @@ html.js-reveal [data-reveal].is-revealed {
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border-hero);
   color: var(--color-bg-main);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 .btn-ghost-light:hover {
   transform: translateY(-2px);
-  background: color-mix(in srgb, var(--color-bg-main) 20%, transparent);
+  background: color-mix(in srgb, var(--color-bg-main) 18%, transparent);
 }
 
-.btn-outline-dark {
-  background: transparent;
-  color: var(--color-primary);
-  border: 2px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
-}
-.btn-outline-dark:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-secondary);
-  color: var(--color-primary);
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-secondary) 25%, transparent);
-}
+.btn-sm { padding: 0.55rem 1.3rem; font-size: 0.88rem; }
 
-/* --- GLASSMORPHISM UTILITY CLASS --- */
+/* ------------------------- KACA UTILITY ------------------------- */
 .glass {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
@@ -261,6 +315,14 @@ html.js-reveal [data-reveal].is-revealed {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border-hero);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 14px 46px rgba(15, 11, 5, 0.25);
 }
+
+/* Garis emas tipis — elemen aksen */
+.gold-hairline {
+  height: 1px;
+  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--color-secondary) 55%, transparent), transparent);
+  border: none;
+}
+
 /* ================= END OF ZONE B ========================================= */
