@@ -1,131 +1,219 @@
 ---
-import { Image } from 'astro:assets';
-import { drivePreviewUrl } from '../lib/image.js';
+import { buildWaLink } from '../lib/format.js';
 
-const { content, gallery } = Astro.props;
-const imageTentang = gallery.find(item => item.kategori === 'tentang' && item.thumbnail_url);
+const { content, aboutImgs = [] } = Astro.props;
+const waLink = buildWaLink(content.whatsapp_number, `Halo, saya ingin konsultasi & jadwal survey ${content.hero_title || 'Amara Valley'}.`);
+
+const rawAbout = String(content.about_description || '').trim();
+
+// Teks "about_description" di spreadsheet saat ini masih berisi narasi proyek
+// template lain (Shanum Haven/Cimanggis). Selama belum diganti di spreadsheet,
+// kami tampilkan narasi khusus Amara Valley yang disusun ulang dari fakta
+// data (lokasi Kelapa Dua, 28 unit, luas unit, DP 0%, dll). Begitu teks asli
+// di spreadsheet diperbarui, narasi baru otomatis dipakai.
+const isLegacyText = /shanum|puri kencana|cimanggis|43 unit|radar auri/i.test(rawAbout);
+const paragraphs = isLegacyText || !rawAbout
+  ? [
+      'Amara Valley adalah klaster rumah tapak bergaya classic-modern karya Amara Land — 28 unit eksklusif dua lantai yang ditata di Kelapa Dua, salah satu kawasan tumbuh di jantung Kota Depok. Arsitektur klasik yang tenang berpadu dengan kenyamanan hunian modern: fasad elegan, ruang lapang, dan material yang dipilih dengan saksama.',
+      'Setiap rumah dibangun di lahan 56–73 m² dengan luas bangunan 70 m² — 3 kamar tidur, 3 kamar mandi, dan carport untuk 2 mobil. Materialnya berbicara sendiri: dinding hebel dengan plester halus, lantai granit 60×60, pintu utama solid wood, kusen full aluminium, hingga penutup atap genteng bitumen di atas rangka baja ringan.',
+      'Lokasinya yang berada di pusat kota, ±20 menit dari akses tol, menjadikan Amara Valley pilihan yang masuk akal bagi keluarga komuter yang menginginkan rumah elegan dengan nilai tumbuh. Ditambah program DP 0% serta biaya KPR dan balik nama yang dapat ditanggung pengembang, memiliki rumah pertama yang berkelas terasa jauh lebih dekat.'
+    ]
+  : rawAbout.split(/\n+/).map(s => s.trim()).filter(Boolean);
 ---
 
-<section id="tentang" class="tentang-section">
-  <div class="container">
-      <div class="banner" data-reveal>
-      {imageTentang ? (
-        <Image
-          src={drivePreviewUrl(imageTentang.thumbnail_url, 1400)}
-          alt="Tentang PKP2 Extension"
-          width={1400}
-          height={900}
-          widths={[480, 900, 1400]}
-          sizes="100vw"
-          format="webp"
-          quality={75}
-          loading="lazy"
-          class="banner-img"
-        />
-      ) : (
-        <div class="banner-fallback">Gambar Tentang belum tersedia</div>
+<section id="tentang" class="about">
+  <div class="container about-grid">
+    <div class="about-media" data-reveal>
+      {aboutImgs[0] && (
+        <figure class="about-media-main">
+          <img
+            src={aboutImgs[0].src}
+            alt="Suasana hunian Amara Valley"
+            width={aboutImgs[0].width}
+            height={aboutImgs[0].height}
+            loading="lazy"
+          />
+        </figure>
       )}
+      {aboutImgs[1] && (
+        <figure class="about-media-side">
+          <img
+            src={aboutImgs[1].src}
+            alt="Detail hunian Amara Valley"
+            width={aboutImgs[1].width}
+            height={aboutImgs[1].height}
+            loading="lazy"
+          />
+        </figure>
+      )}
+      <span class="about-media-caption">
+        {content.badge_text || 'Kelapa Dua · Depok'}
+      </span>
+    </div>
 
-      <div class="banner-overlay"></div>
+    <div class="about-body">
+      <p class="eyebrow" data-reveal>Tentang Klaster</p>
+      <h2 class="about-title" data-reveal>
+        Klasik yang tenang,
+        <em class="accent-serif">modern</em> yang hangat.
+      </h2>
 
-      <div class="banner-content">
-        <span class="badge">Sejak pertengahan 2010-an</span>
-        <h2>Perjalanan Puri Kencana Permai</h2>
-        <p>{content.about_description}</p>
+      <div class="about-text" data-reveal>
+        {paragraphs.map(p => <p>{p}</p>)}
+      </div>
+
+      <dl class="about-facts" data-reveal>
+        <div class="fact">
+          <dt>Luas Tanah</dt>
+          <dd>56 – 73 m²</dd>
+        </div>
+        <div class="fact">
+          <dt>Luas Bangunan</dt>
+          <dd>70 m²</dd>
+        </div>
+        <div class="fact">
+          <dt>Kamar</dt>
+          <dd>3 KT · 3 KM</dd>
+        </div>
+        <div class="fact">
+          <dt>Carport</dt>
+          <dd>2 Mobil</dd>
+        </div>
+      </dl>
+
+      <div class="about-actions" data-reveal>
+        <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-ink">
+          Konsultasi &amp; Jadwal Survey
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>
+        </a>
+        <a href="#unit" class="btn btn-outline">Lihat Denah Unit</a>
       </div>
     </div>
   </div>
 </section>
 
 <style>
-  .tentang-section {
-    padding-block: var(--space-xl);
+  .about {
     background: var(--color-bg-main);
+    padding-block: clamp(72px, 11vw, 128px);
   }
-  .banner {
-    position: relative;
-    width: 100%;
-    min-height: 500px;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-soft);
-    display: flex;
+  .about-grid {
+    display: grid;
+    gap: clamp(36px, 6vw, 72px);
     align-items: center;
-  }
-  .banner :global(.banner-img) {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .banner-fallback {
-    position: absolute;
-    inset: 0;
-    background: var(--color-bg-paper);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-navy-soft); /* Mengambil warna primary yang sudah dilembutkan dari Zone B */
-  }
-  .banner-overlay {
-    position: absolute;
-    inset: 0;
-    /* Gradient otomatis menyesuaikan dengan warna Primary di Zone A */
-    background: linear-gradient(
-      to right, 
-      color-mix(in srgb, var(--color-primary) 95%, transparent), 
-      color-mix(in srgb, var(--color-primary) 75%, transparent) 45%, 
-      color-mix(in srgb, var(--color-primary) 15%, transparent)
-    );
-  }
-  .banner-content {
-    position: relative;
-    z-index: 1;
-    padding: var(--space-lg) var(--space-md);
-    max-width: 640px;
-  }
-  .badge {
-    display: inline-block;
-    background: var(--color-secondary);
-    color: var(--color-bg-main);
-    padding: 6px 16px;
-    border-radius: 999px; /* 999px adalah standar untuk bentuk pill/kapsul, dibiarkan saja */
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: var(--space-sm);
-  }
-  .banner-content h2 {
-    color: var(--color-bg-main);
-    font-size: clamp(1.8rem, 4vw, 2.75rem);
-    font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: var(--space-sm);
-  }
-  .banner-content p {
-    color: color-mix(in srgb, var(--color-bg-main) 90%, transparent);
-    line-height: 1.7;
-    font-size: 0.95rem;
-    white-space: pre-wrap;
   }
 
-  @media (max-width: 767px) {
-    .banner {
-      min-height: 560px;
-    }
-    .banner-content {
-      padding: var(--space-md) var(--space-sm);
-      max-width: 100%;
-    }
-    .banner-overlay {
-      background: linear-gradient(
-        to top, 
-        color-mix(in srgb, var(--color-primary) 95%, transparent), 
-        color-mix(in srgb, var(--color-primary) 60%, transparent) 55%, 
-        color-mix(in srgb, var(--color-primary) 15%, transparent)
-      );
-    }
+  /* --- Komposisi media editorial --- */
+  .about-media {
+    position: relative;
+    max-width: 560px;
+  }
+  .about-media-main {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+  }
+  .about-media-main::before {
+    content: '';
+    position: absolute;
+    inset: -14px -14px auto auto;
+    width: 46%;
+    height: 46%;
+    border-top: 1px solid var(--color-secondary);
+    border-right: 1px solid var(--color-secondary);
+    border-radius: 0 var(--radius-md) 0 0;
+    z-index: 2;
+  }
+  .about-media-main img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    transition: transform 1.4s var(--ease-out);
+  }
+  .about-media:hover .about-media-main img { transform: scale(1.03); }
+  .about-media-side {
+    position: absolute;
+    right: -6%;
+    bottom: -14%;
+    width: 52%;
+    margin: 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 8px solid var(--color-bg-main);
+    box-shadow: var(--shadow-xl);
+    z-index: 3;
+  }
+  .about-media-side img {
+    width: 100%;
+    aspect-ratio: 4 / 3.2;
+    object-fit: cover;
+  }
+  .about-media-caption {
+    position: absolute;
+    left: 18px;
+    bottom: -34px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.26em;
+    color: var(--color-secondary);
+  }
+
+  /* --- Teks --- */
+  .about-body { max-width: 640px; }
+  .about-title {
+    font-size: clamp(1.9rem, 3.6vw, 3rem);
+    margin: 18px 0 26px;
+  }
+  .about-title em { font-size: 1.04em; }
+  .about-text p {
+    margin-bottom: 16px;
+    color: var(--color-muted);
+    line-height: var(--leading-relaxed);
+  }
+
+  .about-facts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    margin-block: 30px;
+    border-top: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+  }
+  .fact {
+    padding: 16px 18px;
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-paper);
+  }
+  .fact dt {
+    font-size: 0.64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--color-secondary);
+    margin-bottom: 6px;
+  }
+  .fact dd {
+    font-family: var(--font-display);
+    font-size: 1.28rem;
+    color: var(--color-primary);
+  }
+
+  .about-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 34px;
+  }
+
+  @media (min-width: 1000px) {
+    .about-grid { grid-template-columns: minmax(0, 0.95fr) 1.05fr; }
+    .about-media { justify-self: end; }
+    .about-body { padding-left: 0; }
+    .about-media { padding-bottom: 64px; }
+    .about-media-caption { bottom: 8px; }
   }
 </style>

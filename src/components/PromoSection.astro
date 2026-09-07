@@ -1,106 +1,219 @@
 ---
+import { buildWaLink, formatRupiah } from '../lib/format.js';
+
 const { content } = Astro.props;
 
-// Dikumpulin dari semua key yang polanya promo_items_N
 const promoItems = Object.keys(content)
   .filter((k) => /^promo_items_\d+$/.test(k))
   .sort()
   .map((k) => content[k])
   .filter(Boolean);
 
-// Promo otomatis nongol/hilang
 const now = new Date();
 const start = content.promo_start_date ? new Date(content.promo_start_date) : null;
 const end = content.promo_end_date ? new Date(content.promo_end_date) : null;
 const isPromoActive = (!start || now >= start) && (!end || now <= end);
+
+const waMessage = `Halo, saya tertarik promo ${content.hero_title || 'Amara Valley'} (${content.promo_dp || 'DP 0%'} · ${content.promo_booking || ''}). Mohon info unit tersedia.`;
+const waLink = buildWaLink(content.whatsapp_number, waMessage);
 ---
 
 {promoItems.length > 0 && isPromoActive && (
-  <section id="promo" class="promo-section">
-    <div class="container">
-      <div class="section-heading" data-reveal>
-        <span class="eyebrow">Promo Terbatas</span>
-        <h2>Promo & Bonus Menarik</h2>
+  <section id="promo" class="promo">
+    <div class="promo-glow" aria-hidden="true"></div>
+    <div class="container promo-grid">
+      <div class="promo-copy" data-reveal>
+        <p class="promo-kicker">
+          <span class="promo-kicker-line" aria-hidden="true"></span>
+          Penawaran Terbatas · {content.badge_text || 'Depok'}
+        </p>
+        <h2 class="promo-title">
+          Harga mulai {content.price_from ? formatRupiah(content.price_from).replace('Rp ', 'Rp') : '900 juta'}
+          <br /><em class="accent-serif">tanpa DP.</em>
+        </h2>
+        <p class="promo-desc">
+          Program kepemilikan {content.promo_booking || 'booking ringan'} untuk unit-unit terpilih —
+          biaya KPR, AJB notaris, balik nama &amp; sertifikat dipermudah.
+        </p>
+
+        <div class="promo-chips">
+          {content.promo_dp && <span class="chip-chip"><strong>{content.promo_dp}</strong> Uang Muka</span>}
+          {content.promo_booking && <span class="chip-chip"><strong>{content.promo_booking.replace('Booking Fee ', '')}</strong> Booking Fee</span>}
+          {content.bank_partner && <span class="chip-chip chip-chip-ghost">Bank Partner: {content.bank_partner}</span>}
+        </div>
+
+        <div class="promo-actions">
+          <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-gold">
+            Amankan Unit Anda
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>
+          </a>
+          <a href="#kpr" class="btn btn-ghost-light">Hitung Cicilan Anda</a>
+        </div>
       </div>
 
-      <div class="promo-grid">
-        <div class="promo-card" data-reveal>
-          <h3>KPR & Cash Bertahap</h3>
-          <ul>
-            {promoItems.map((item) => <li>✓ {item}</li>)}
-            {content.promo_diskon_kpr && <li class="promo-diskon">✓ Diskon {content.promo_diskon_kpr}</li>}
-          </ul>
-        </div>
-        
-        <div class="promo-card promo-card-highlight" data-reveal style="--reveal-delay: 120ms">
-          <h3>Cash Keras</h3>
-          <ul>
-            {promoItems.map((item) => <li>✓ {item}</li>)}
-            {content.promo_diskon_cash && <li class="promo-diskon">✓ Diskon {content.promo_diskon_cash}</li>}
-          </ul>
-        </div>
-      </div>
+      <aside class="promo-card" data-reveal style="--reveal-delay: 140ms">
+        <p class="promo-card-label">Termasuk dalam promo</p>
+        <ul class="promo-list">
+          {promoItems.map((item) => (
+            <li>
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+        <p class="promo-note">Syarat &amp; ketentuan berlaku. Detail promo dikonfirmasi oleh tim pemasaran saat Anda menghubungi kami.</p>
+        <hr class="gold-hairline" />
+        <p class="promo-contact">
+          <span>Butuh penjelasan?</span>
+          <a href={waLink} target="_blank" rel="noopener noreferrer">Chat tim kami di WhatsApp</a>
+        </p>
+      </aside>
     </div>
   </section>
 )}
 
 <style>
-  .promo-section {
-    padding-block: var(--space-xl);
-    background: var(--color-primary);
+  .promo {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-dark);
     color: var(--color-bg-main);
+    padding-block: clamp(76px, 10vw, 128px);
+    border-block: 1px solid color-mix(in srgb, var(--color-gold-light) 22%, transparent);
   }
-  .section-heading {
-    text-align: center;
-    margin-bottom: var(--space-lg);
+  .promo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-secondary), transparent);
+    opacity: 0.8;
   }
-  .eyebrow {
-    display: block;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-secondary);
-    margin-bottom: var(--space-xs);
-  }
-  .section-heading h2 {
-    font-size: clamp(1.6rem, 3vw, 2.2rem);
-    color: var(--color-bg-main);
+  .promo-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(46% 60% at 88% 12%, color-mix(in srgb, var(--color-secondary) 13%, transparent), transparent 70%),
+      radial-gradient(40% 46% at 6% 96%, color-mix(in srgb, var(--color-secondary) 9%, transparent), transparent 70%);
+    pointer-events: none;
   }
   .promo-grid {
+    position: relative;
     display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-md);
+    gap: clamp(36px, 5vw, 64px);
+    align-items: center;
   }
-  .promo-card {
-    background: color-mix(in srgb, var(--color-bg-main) 6%, transparent);
-    border: var(--border-width) solid color-mix(in srgb, var(--color-bg-main) 12%, transparent);
-    border-radius: var(--radius-lg);
-    padding: var(--space-md);
-  }
-  .promo-card-highlight {
-    border-color: var(--color-secondary);
-    background: color-mix(in srgb, var(--color-secondary) 12%, transparent);
-  }
-  .promo-card h3 {
-    font-family: var(--font-display);
-    margin-bottom: var(--space-sm);
-    color: var(--color-secondary);
-  }
-  .promo-card ul {
-    list-style: none;
-    display: grid;
-    gap: var(--space-xs);
-    font-size: 0.92rem;
-  }
-  .promo-diskon {
+  .promo-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: var(--color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-gold-light);
+  }
+  .promo-kicker-line { width: 46px; height: 1px; background: var(--color-gold-light); }
+  .promo-title {
+    color: var(--color-bg-main);
+    font-size: clamp(2.1rem, 5vw, 3.9rem);
+    line-height: 1.08;
+    margin: 22px 0 20px;
+  }
+  .promo-title em { color: var(--color-gold-light); }
+  .promo-desc {
+    max-width: 46ch;
+    color: color-mix(in srgb, var(--color-bg-main) 74%, transparent);
+    line-height: var(--leading-relaxed);
+  }
+  .promo-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-block: 26px;
+  }
+  .chip-chip {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 1px;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: color-mix(in srgb, var(--color-bg-main) 72%, transparent);
+    background: rgba(250, 248, 243, 0.06);
+    border: 1px solid rgba(250, 248, 243, 0.14);
+    border-radius: var(--radius-md);
+    padding: 12px 18px;
+  }
+  .chip-chip strong {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.3rem;
+    text-transform: none;
+    letter-spacing: 0.01em;
+    color: var(--color-gold-light);
+  }
+  .chip-chip-ghost {
+    justify-content: center;
+    font-size: 0.78rem;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    color: var(--color-bg-main);
   }
 
-  @media (min-width: 640px) {
-    .promo-grid {
-      grid-template-columns: 1fr 1fr;
-    }
+  .promo-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+
+  .promo-card {
+    background: color-mix(in srgb, var(--color-bg-main) 5%, transparent);
+    border: 1px solid rgba(250, 248, 243, 0.14);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: clamp(24px, 3.4vw, 40px);
+  }
+  .promo-card-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.26em;
+    color: var(--color-gold-light);
+    margin-bottom: 22px;
+  }
+  .promo-list { list-style: none; display: grid; gap: 0; }
+  .promo-list li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-block: 15px;
+    border-bottom: 1px solid rgba(250, 248, 243, 0.09);
+    font-size: 0.97rem;
+    color: var(--color-bg-main);
+  }
+  .promo-list li svg { color: var(--color-gold-light); flex: none; }
+  .promo-note {
+    margin-top: 20px;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: color-mix(in srgb, var(--color-bg-main) 55%, transparent);
+  }
+  .promo-contact {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.9rem;
+  }
+  .promo-contact span { color: color-mix(in srgb, var(--color-bg-main) 62%, transparent); font-size: 0.78rem; }
+  .promo-contact a {
+    color: var(--color-gold-light);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-gold-light) 40%, transparent);
+    width: fit-content;
+  }
+
+  @media (min-width: 1000px) {
+    .promo-grid { grid-template-columns: 1.15fr 0.85fr; }
   }
 </style>

@@ -3,27 +3,28 @@ import { formatRupiah, buildWaLink } from '../lib/format.js';
 
 const { content, heroImageResult, availableUnits, totalUnits } = Astro.props;
 
-const waMessage = `Halo, saya tertarik dengan ${content.hero_title || 'properti ini'}. Boleh info lebih lanjut?`;
+const waMessage = `Halo, saya tertarik dengan ${content.hero_title || 'Amara Valley'}. Boleh info lebih lanjut?`;
 const waLink = buildWaLink(content.whatsapp_number, waMessage);
 
-// Parse angka dari nilai stat di sheet (mis. "19 Exclusive" -> 19 + "Exclusive")
-function parseStatNum(raw) {
-  if (raw === null || raw === undefined || raw === '') return null;
-  const m = String(raw).trim().match(/^(\d+)\s*(.*)$/);
-  if (!m) return null;
-  return { num: Number(m[1]), suffix: m[2].trim() };
-}
-const unitStat = parseStatNum(content.total_unit);
-const lantaiStat = parseStatNum(content.jumlah_lantai);
-const lrtStat = parseStatNum(content.jarak_lrt);
-const tolStat = parseStatNum(content.jarak_tol);
+// Parse "2 Lantai::Desain Modern::3 Kamar Tidur::..." jadi kartu kecil fitur.
+// Kalau awalnya angka, tampilkan angka besarnya + label; kalau teks, italic.
+const houseFeatures = String(content.rumah || '')
+  .split('::')
+  .map(s => s.trim())
+  .filter(Boolean)
+  .map((s) => {
+    const m = s.match(/^(\d+)\s+(.+)$/);
+    return m
+      ? { value: m[1], label: m[2] }
+      : { value: null, label: s };
+  });
 ---
 
-<section class="hero">
+<section class="hero" data-hero>
   {heroImageResult && (
     <img
       src={heroImageResult.src}
-      alt={content.hero_title || 'Foto cluster'}
+      alt={content.hero_title || 'Amara Valley — hunian modern classic di Depok'}
       width={heroImageResult.attributes?.width}
       height={heroImageResult.attributes?.height}
       loading="eager"
@@ -31,70 +32,89 @@ const tolStat = parseStatNum(content.jarak_tol);
       class="hero-bg"
     />
   )}
-  <div class="hero-overlay" aria-hidden="true"></div>
-  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="hero-shade" aria-hidden="true"></div>
 
   <div class="container hero-content">
-    {content.badge_text && (
-      <span class="hero-badge glass--hero hero-in" style="--hero-delay: 0s">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 5.4L20 8.3l-4 4.1.9 5.8L12 15.4l-4.9 2.8.9-5.8-4-4.1 5.6-.9L12 2z"/></svg>
-        {content.badge_text}
-      </span>
-    )}
+    <div class="hero-copy">
+      {content.badge_text && (
+        <p class="hero-kicker" style="--hero-delay: 60ms">
+          <span class="kicker-line" aria-hidden="true"></span>
+          {content.badge_text}
+        </p>
+      )}
 
-    {availableUnits !== undefined && availableUnits !== null && (
-      <div class="scarcity-badge glass--hero hero-in" style="--hero-delay: 80ms">
-        <svg class="scarcity-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-        Tersisa <strong>{availableUnits}</strong> dari {totalUnits} unit!
-      </div>
-    )}
+      <h1 class="hero-title" style="--hero-delay: 180ms">
+        {content.hero_title || 'Amara Valley'}
+      </h1>
 
-    <h1 class="hero-title hero-in" style="--hero-delay: 160ms">{content.hero_title}</h1>
-    {content.hero_subtitle && <p class="hero-subtitle hero-in" style="--hero-delay: 240ms">{content.hero_subtitle}</p>}
+      {content.hero_subtitle && (
+        <p class="hero-subtitle" style="--hero-delay: 320ms">
+          {content.hero_subtitle.split(' ').slice(0, -1).join(' ')}
+          {content.hero_subtitle && <em class="accent-serif"> {content.hero_subtitle.split(' ').slice(-1).join(' ')}</em>}
+        </p>
+      )}
 
-    <div class="hero-price-card glass--hero hero-in" style="--hero-delay: 320ms">
-      <span class="hero-price-label">Harga mulai</span>
-      <span class="hero-price" data-countup={content.price_from} data-countup-format="rupiah">{formatRupiah(content.price_from)}</span>
-      <div class="hero-promo">
-        {content.promo_dp && <span class="promo-chip">{content.promo_dp}</span>}
-        {content.promo_booking && <span class="promo-chip">{content.promo_booking}</span>}
+      <div class="hero-ctas" style="--hero-delay: 440ms">
+        <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-gold hero-btn">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.464 3.482 1.345 4.997L2 22l5.117-1.334a9.965 9.965 0 0 0 4.887 1.28h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.928-7.07a9.935 9.935 0 0 0-7.073-2.876zm0 18.184a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.037.792.81-2.96-.194-.304a8.147 8.147 0 0 1-1.247-4.348c0-4.507 3.667-8.174 8.176-8.174 2.183 0 4.235.852 5.78 2.398a8.12 8.12 0 0 1 2.394 5.783c0 4.508-3.667 8.13-8.217 8.13zm4.468-6.12c-.248-.124-1.4-.69-1.616-.768-.217-.078-.375-.116-.533.116-.157.233-.61.769-.747.927-.137.158-.275.178-.51.059-.234-.12-.99-.365-1.885-1.164-.698-.622-1.168-1.388-1.304-1.62-.137-.233-.015-.36.102-.477.105-.105.275-.273.412-.411.137-.137.183-.233.275-.389.091-.156.045-.291-.02-.408-.065-.116-.583-1.404-.799-1.922-.21-.505-.424-.437-.583-.445l-.497-.01c-.172 0-.45.064-.685.32-.234.256-.895.874-.895 2.132 0 1.257.915 2.472 1.042 2.649.128.176 1.797 2.746 4.356 3.852.608.263 1.084.42 1.454.538.626.199 1.195.171 1.645.104.508-.076 1.4-.573 1.6-1.126.198-.553.198-1.026.138-1.126-.06-.1-.217-.16-.451-.279z"/></svg>
+          Booking via WhatsApp
+        </a>
+        <a href="#unit" class="btn btn-ghost-light">
+          Jelajahi Tipe Unit
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14m0 0l-6-6m6 6l6-6"/></svg>
+        </a>
       </div>
     </div>
 
-    {(unitStat || lantaiStat || lrtStat || tolStat) && (
-      <div class="hero-stats glass--hero hero-in" style="--hero-delay: 400ms">
-        {unitStat && (
-          <div class="stat">
-            <strong><span data-countup={unitStat.num}>{unitStat.num}</span>{unitStat.suffix ? ` ${unitStat.suffix}` : ''}</strong>
-            <span>Unit</span>
-          </div>
-        )}
-        {lantaiStat && <div class="stat"><strong><span data-countup={lantaiStat.num}>{lantaiStat.num}</span></strong><span>Lantai</span></div>}
-        {lrtStat && <div class="stat"><strong><span data-countup={lrtStat.num}>{lrtStat.num}</span></strong><span>{lrtStat.suffix || 'LRT'}</span></div>}
-        {tolStat && <div class="stat"><strong><span data-countup={tolStat.num}>{tolStat.num}</span></strong><span>{tolStat.suffix || 'Menit'}</span></div>}
+    <div class="hero-panel" style="--hero-delay: 540ms">
+      <div class="hero-price">
+        <span class="hero-price-label">Harga mulai</span>
+        <strong class="hero-price-value"><span data-countup={content.price_from} data-countup-format="rupiah">{formatRupiah(content.price_from)}</span></strong>
+        <div class="hero-promos">
+          {content.promo_dp && <span class="promo-chip">{content.promo_dp}</span>}
+          {content.promo_booking && <span class="promo-chip promo-chip-line">{content.promo_booking}</span>}
+        </div>
       </div>
-    )}
-
-    <div class="hero-ctas hero-in" style="--hero-delay: 480ms">
-      <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-gold hero-btn-wa">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.464 3.482 1.345 4.997L2 22l5.117-1.334a9.965 9.965 0 0 0 4.887 1.28h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.928-7.07a9.935 9.935 0 0 0-7.073-2.876zm0 18.184a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.037.792.81-2.96-.194-.304a8.147 8.147 0 0 1-1.247-4.348c0-4.507 3.667-8.174 8.176-8.174 2.183 0 4.235.852 5.78 2.398a8.12 8.12 0 0 1 2.394 5.783c0 4.508-3.667 8.13-8.217 8.13zm4.468-6.12c-.248-.124-1.4-.69-1.616-.768-.217-.078-.375-.116-.533.116-.157.233-.61.769-.747.927-.137.158-.275.178-.51.059-.234-.12-.99-.365-1.885-1.164-.698-.622-1.168-1.388-1.304-1.62-.137-.233-.015-.36.102-.477.105-.105.275-.273.412-.411.137-.137.183-.233.275-.389.091-.156.045-.291-.02-.408-.065-.116-.583-1.404-.799-1.922-.21-.505-.424-.437-.583-.445l-.497-.01c-.172 0-.45.064-.685.32-.234.256-.895.874-.895 2.132 0 1.257.915 2.472 1.042 2.649.128.176 1.797 2.746 4.356 3.852.608.263 1.084.42 1.454.538.626.199 1.195.171 1.645.104.508-.076 1.4-.573 1.6-1.126.198-.553.198-1.026.138-1.126-.06-.1-.217-.16-.451-.279z"/></svg>
-        Booking via WhatsApp
-      </a>
-      <a href="#unit" class="btn btn-ghost-light hero-btn-secondary">
-        Lihat Pilihan Unit
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14m0 0l-6-6m6 6l6-6"/></svg>
-      </a>
+      <span class="hero-price-divider" aria-hidden="true"></span>
+      <div class="hero-scarcity">
+        {availableUnits !== undefined && availableUnits !== null && totalUnits ? (
+          <>
+            <span class="hero-scarcity-num"><span data-countup={availableUnits}>{availableUnits}</span></span>
+            <span class="hero-scarcity-label">unit tersedia<br />dari {totalUnits.replace(/[^0-9]/g, '') || totalUnits} unit</span>
+          </>
+        ) : (
+          <span class="hero-scarcity-label">{content.total_unit || '28 unit eksklusif'}</span>
+        )}
+      </div>
     </div>
   </div>
 
   <a href="#tentang" class="hero-scroll" aria-label="Scroll ke bawah">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    <span>Jelajahi</span>
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
   </a>
 </section>
 
+{houseFeatures.length > 0 && (
+  <section class="features-strip" aria-label="Fitur utama rumah">
+    <div class="container">
+      <div class="features-strip-inner">
+        {houseFeatures.map((f, i) => (
+          <div class="feature" data-reveal style={`--reveal-delay: ${i * 70}ms`}>
+            {f.value ? (
+              <span class="feature-value">{f.value}</span>
+            ) : (
+              <span class="feature-word accent-serif">{f.label.split(' ')[0]}</span>
+            )}
+            <span class="feature-label">{f.value ? f.label : f.label.split(' ').slice(1).join(' ') || f.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
 <script>
-  // Count-up angka (harga & stats). Nilai final udah dirender server-side,
-  // jadi tanpa-JS / reduced-motion isi tetap benar - ini murni kosmetik.
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const els = document.querySelectorAll('.hero [data-countup]');
   if (!reduced && els.length > 0) {
@@ -103,8 +123,8 @@ const tolStat = parseStatNum(content.jarak_tol);
       const target = Number(el.getAttribute('data-countup'));
       if (!isFinite(target) || target <= 0) return;
       const asRupiah = el.getAttribute('data-countup-format') === 'rupiah';
-      const dur = 1400;
-      const t0 = performance.now() + 500; // kasih jeda entrance animasi selesai duluan
+      const dur = 1500;
+      const t0 = performance.now() + 650;
       const fmt = (v) => (asRupiah ? 'Rp ' : '') + v.toLocaleString('id-ID');
       const step = (now) => {
         if (now < t0) { requestAnimationFrame(step); return; }
@@ -120,217 +140,245 @@ const tolStat = parseStatNum(content.jarak_tol);
 <style>
   .hero {
     position: relative;
-    min-height: 100svh;
+    min-height: max(640px, 92svh);
     display: flex;
     align-items: flex-end;
     overflow: hidden;
-    background: var(--color-primary);
+    background: var(--color-dark);
+    padding-bottom: clamp(96px, 12vh, 140px);
   }
-  .hero-bg,
-  .hero-overlay,
-  .hero-glow {
+  .hero-bg {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-  }
-  .hero-bg {
     object-fit: cover;
-    animation: hero-zoom 22s ease-in-out infinite alternate;
+    animation: hero-zoom 26s ease-in-out infinite alternate;
   }
   @keyframes hero-zoom {
     from { transform: scale(1); }
-    to { transform: scale(1.09); }
+    to { transform: scale(1.06); }
   }
-  .hero-overlay {
-    background: linear-gradient(
-      to top,
-      color-mix(in srgb, var(--color-primary) 92%, transparent) 0%,
-      color-mix(in srgb, var(--color-primary) 55%, transparent) 45%,
-      color-mix(in srgb, var(--color-primary) 15%, transparent) 100%
-    );
-  }
-  /* Warm glow emas halus di area konten - kasih kesan premium */
-  .hero-glow {
+  .hero-shade {
+    position: absolute;
+    inset: 0;
     background:
-      radial-gradient(52% 42% at 18% 88%, color-mix(in srgb, var(--color-secondary) 14%, transparent), transparent 70%),
-      radial-gradient(40% 30% at 85% 20%, color-mix(in srgb, var(--color-secondary) 7%, transparent), transparent 70%);
+      linear-gradient(to top,
+        rgba(21, 17, 11, 0.88) 0%,
+        rgba(21, 17, 11, 0.45) 38%,
+        rgba(21, 17, 11, 0.18) 72%,
+        rgba(21, 17, 11, 0.42) 100%),
+      radial-gradient(90% 60% at 78% 20%, transparent 30%, rgba(21, 17, 11, 0.25) 100%);
   }
   .hero-content {
     position: relative;
-    z-index: 1;
-    color: var(--color-bg-main);
-    padding-block: var(--space-xl) var(--space-lg);
+    width: 100%;
+    display: grid;
+    gap: clamp(28px, 5vh, 52px);
   }
+  .hero-copy { max-width: 860px; }
 
-  /* Entrance animation berurutan (stagger) */
-  .hero-in {
-    animation: hero-in 0.9s var(--ease-out) both;
-    animation-delay: calc(var(--hero-delay, 0s) + 0.15s);
-  }
-  @keyframes hero-in {
-    from { opacity: 0; transform: translateY(28px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .hero-badge {
-    display: inline-flex;
+  .hero-kicker {
+    display: flex;
     align-items: center;
-    gap: 8px;
-    background: var(--glass-bg-hero);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border-hero);
-    color: var(--color-bg-main);
+    gap: 14px;
+    color: var(--color-gold-light);
+    font-size: 0.74rem;
     font-weight: 600;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 6px 16px;
-    border-radius: 999px;
-    margin-bottom: var(--space-sm);
+    letter-spacing: 0.3em;
+    margin-bottom: 26px;
+    animation: hero-in 0.9s var(--ease-out) both;
+    animation-delay: 0.1s;
   }
-  .hero-badge svg { color: var(--color-secondary); }
-  .scarcity-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(184, 147, 95, 0.35);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid rgba(184, 147, 95, 0.3);
-    color: var(--color-bg-main);
-    font-weight: 700;
-    font-size: 0.95rem;
-    padding: 8px 18px;
-    border-radius: 999px;
-    margin-bottom: var(--space-sm);
-    animation: pulse-scarcity 2s ease-in-out infinite, hero-in 0.9s var(--ease-out) both;
-    animation-delay: 0s, 0.15s;
-  }
-  .scarcity-icon {
-    flex-shrink: 0;
-  }
-  @keyframes pulse-scarcity {
-    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-secondary) 40%, transparent); }
-    50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-secondary) 0%, transparent); }
+  .kicker-line {
+    width: 52px;
+    height: 1px;
+    background: var(--color-gold-light);
+    flex: none;
   }
   .hero-title {
-    font-size: var(--text-h1);
-    margin-bottom: var(--space-xs);
-    max-width: 20ch;
+    color: var(--color-bg-main);
+    font-size: clamp(2.9rem, 9vw, 6.4rem);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.02;
+    animation: hero-in 1s var(--ease-out) both;
+    animation-delay: 0.22s;
   }
   .hero-subtitle {
-    font-size: 1.15rem;
-    color: color-mix(in srgb, var(--color-bg-main) 85%, transparent);
-    margin-bottom: var(--space-md);
+    margin-top: 18px;
+    font-size: clamp(1.15rem, 2vw, 1.55rem);
+    color: color-mix(in srgb, var(--color-bg-main) 88%, transparent);
+    animation: hero-in 1s var(--ease-out) both;
+    animation-delay: 0.36s;
   }
-  .hero-price-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    color: var(--color-primary);
-    display: inline-flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: var(--space-sm) var(--space-md);
-    border-radius: var(--radius-md);
-    box-shadow: var(--glass-shadow);
-    margin-bottom: var(--space-md);
-  }
-  .hero-price-label {
-    font-size: 0.8rem;
-    color: var(--color-navy-soft);
-  }
-  .hero-price {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    font-variant-numeric: tabular-nums;
-  }
-  .hero-promo {
-    display: flex;
-    gap: 8px;
-    margin-top: 4px;
-    flex-wrap: wrap;
-  }
-  .promo-chip {
-    background: var(--color-gold-soft);
-    color: var(--color-primary);
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 999px;
-  }
-  .hero-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-md);
-    padding: var(--space-sm) var(--space-md);
-    border-radius: var(--radius-md);
-  }
-  .stat {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.85rem;
-    color: color-mix(in srgb, var(--color-bg-main) 85%, transparent);
-    padding-right: var(--space-md);
-    border-right: 1px solid var(--glass-border-hero);
-  }
-  .stat:last-child {
-    border-right: none;
-    padding-right: 0;
-  }
-  .stat strong {
-    font-size: 1.1rem;
-    color: var(--color-bg-main);
-    font-variant-numeric: tabular-nums;
-  }
+  .hero-subtitle em { color: var(--color-gold-light); font-size: 1.08em; }
+
   .hero-ctas {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-sm);
-  }
-  .hero-btn-wa {
-    padding: 15px 30px;
-    font-size: 1rem;
-  }
-  .hero-btn-secondary {
-    padding: 15px 26px;
-    font-size: 1rem;
-    font-weight: 600;
+    gap: 14px;
+    margin-top: 38px;
+    animation: hero-in 1s var(--ease-out) both;
+    animation-delay: 0.5s;
   }
 
-  /* Indikator scroll - bouncing chevron dalam chip kaca */
+  .hero-panel {
+    display: flex;
+    align-items: center;
+    gap: clamp(20px, 4vw, 44px);
+    padding-top: 22px;
+    border-top: 1px solid rgba(250, 248, 243, 0.22);
+    animation: hero-in 1s var(--ease-out) both;
+    animation-delay: 0.62s;
+  }
+  .hero-price { display: flex; flex-direction: column; gap: 2px; }
+  .hero-price-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.26em;
+    color: color-mix(in srgb, var(--color-bg-main) 64%, transparent);
+  }
+  .hero-price-value {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+    color: var(--color-bg-main);
+  }
+  .hero-promos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .promo-chip {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    background: var(--color-secondary);
+    color: #FDFBF6;
+  }
+  .promo-chip-line {
+    background: transparent;
+    border: 1px solid rgba(250, 248, 243, 0.35);
+    color: var(--color-bg-main);
+  }
+  .hero-price-divider {
+    width: 1px;
+    height: 58px;
+    background: rgba(250, 248, 243, 0.22);
+    flex: none;
+  }
+  .hero-scarcity {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .hero-scarcity-num {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--color-gold-light);
+  }
+  .hero-scarcity-label {
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--color-bg-main) 76%, transparent);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
   .hero-scroll {
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 16px;
-    z-index: 1;
-    width: 38px;
-    height: 38px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: var(--glass-bg-hero);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border-hero);
-    color: var(--color-bg-main);
-    transition: background var(--duration-normal) var(--ease-out);
-    animation: hero-bounce 2.2s ease-in-out infinite;
+    right: var(--space-sm);
+    bottom: 26px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    color: color-mix(in srgb, var(--color-bg-main) 66%, transparent);
+    text-decoration: none;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    writing-mode: vertical-rl;
   }
-  .hero-scroll:hover { background: color-mix(in srgb, var(--color-bg-main) 22%, transparent); }
-  @keyframes hero-bounce {
-    0%, 100% { transform: translate(-50%, 0); }
-    50% { transform: translate(-50%, 7px); }
+  .hero-scroll svg { transform: rotate(90deg); }
+
+  @keyframes hero-in {
+    from { opacity: 0; transform: translateY(26px); }
+    to { opacity: 1; transform: none; }
   }
 
-  @media (max-width: 640px), (max-height: 680px) {
-    .hero-scroll { display: none; }
+  @media (min-width: 900px) {
+    .hero-content { grid-template-columns: 1.7fr 1fr; align-items: end; }
+    .hero-panel {
+      justify-content: flex-end;
+      border-top: none;
+      border-left: 1px solid rgba(250, 248, 243, 0.22);
+      border-left-color: color-mix(in srgb, var(--color-gold-light) 30%, transparent);
+      padding: 6px 0 6px clamp(20px, 4vw, 44px);
+    }
+    .hero-scroll { display: flex; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-bg { animation: none; }
+    .hero-kicker, .hero-title, .hero-subtitle, .hero-ctas, .hero-panel { animation: none; }
+  }
+
+  /* ---- Strip fitur yang menimpa batas hero (white-space elegan) ---- */
+  .features-strip {
+    position: relative;
+    z-index: 3;
+    margin-top: -76px;
+  }
+  .features-strip-inner {
+    background: var(--color-bg-main);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    padding: 6px 0;
+  }
+  .feature {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 22px 22px;
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    text-align: center;
+    align-items: center;
+  }
+  .feature-value {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--color-primary);
+    line-height: 1;
+  }
+  .feature-word {
+    font-size: 1.5rem;
+    line-height: 1.1;
+  }
+  .feature-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-muted);
+    margin-top: 8px;
+    text-align: center;
+  }
+  @media (min-width: 760px) {
+    .features-strip-inner { grid-template-columns: repeat(5, 1fr); }
+    .feature { padding: 26px 12px; }
+  }
+  @media (max-width: 380px) {
+    .features-strip-inner { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 759px) {
+    .feature:nth-child(even) { border-right-width: 0; }
+    .feature:last-child { grid-column: 1 / -1; border-bottom-width: 0; }
+  }
+  @media (min-width: 760px) {
+    .feature:nth-child(even) { border-right-width: 1px; }
+    .feature:last-child { border-right-width: 0; }
   }
 </style>

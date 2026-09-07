@@ -59,7 +59,7 @@ try {
   ({ content, articles, units, gallery } = await getSiteData());
 } catch (err) {
   // Data minimal agar halaman tetap render dengan pesan error
-  content = { company_name: 'Arciv Property', hero_title: 'Error' };
+  content = { company_name: 'Amara Land', hero_title: 'Error' };
   articles = [];
   units = [];
   gallery = [];
@@ -144,7 +144,7 @@ const jsonLd = {
   image: article.cover_url ? [coverSrc] : undefined,
   publisher: {
     '@type': 'Organization',
-    name: content.company_name || 'Arciv Property'
+    name: content.company_name || 'Amara Land'
   },
   mainEntityOfPage: canonicalUrl
 };
@@ -166,7 +166,7 @@ const faqJsonLd = articleFaq.length > 0 ? {
 ---
 
 <BaseLayout
-  title={article.meta_title || `${article.title} - ${content.company_name || 'Arciv Property'}`}
+  title={article.meta_title || `${article.title} - ${content.company_name || 'Amara Land'}`}
   description={article.meta_description || article.title}
   ogImage={coverSrc}
   companyName={content.company_name}

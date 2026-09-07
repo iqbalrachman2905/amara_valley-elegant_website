@@ -2,6 +2,8 @@
 import '@fontsource/playfair-display/500.css';
 import '@fontsource/playfair-display/600.css';
 import '@fontsource/playfair-display/700.css';
+import '@fontsource/playfair-display/500-italic.css';
+import '@fontsource/playfair-display/600-italic.css';
 import '@fontsource/plus-jakarta-sans/400.css';
 import '@fontsource/plus-jakarta-sans/500.css';
 import '@fontsource/plus-jakarta-sans/600.css';
@@ -22,9 +24,9 @@ interface Props {
 
 const {
   title,
-  description = 'Cluster premium di Cibubur, dekat LRT & Tol Cibubur. Rumah baru 2 lantai mulai 900 jutaan.',
+  description = 'Amara Valley — klaster rumah 2 lantai modern classic di Kelapa Dua, Depok. 28 unit eksklusif, DP 0%, mulai Rp 900 jutaan.',
   ogImage,
-  companyName = 'Arciv Property',
+  companyName = 'Amara Land',
   companyPhone,
   waNumber
 } = Astro.props;
@@ -50,7 +52,7 @@ const orgJsonLd = {
 
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#102A43" />
+    <meta name="theme-color" content="#211D15" />
 
     <!-- Tandai bahwa JS jalan - dipakai CSS scroll-reveal supaya tanpa-JS
          konten tetap keliatan (progressive enhancement). -->
@@ -76,8 +78,7 @@ const orgJsonLd = {
     <StickyWhatsApp waNumber={waNumber} />
     <BackToTop />
 
-    <!-- Scroll reveal: elemen [data-reveal] fade-up pas masuk viewport.
-         Kecil, vanilla, sekali jalan - hormat prefers-reduced-motion via CSS. -->
+    <!-- Scroll reveal: elemen [data-reveal] fade-up pas masuk viewport. -->
     <script>
       const revealEls = document.querySelectorAll('[data-reveal]');
       if ('IntersectionObserver' in window && revealEls.length > 0) {
@@ -88,7 +89,7 @@ const orgJsonLd = {
               io.unobserve(entry.target);
             }
           }
-        }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+        }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
         revealEls.forEach((el) => io.observe(el));
       } else {
         revealEls.forEach((el) => el.classList.add('is-revealed'));

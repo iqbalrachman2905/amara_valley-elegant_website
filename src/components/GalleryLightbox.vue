@@ -131,7 +131,7 @@ onUnmounted(() => {
 .lightbox {
   position: fixed;
   inset: 0;
-  background: rgba(20, 33, 61, 0.88);
+  background: rgba(24, 20, 13, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 100;

@@ -7,7 +7,7 @@ import sitemap from '@astrojs/sitemap';
 // valid (tanpa ini `new URL(path, Astro.site)` di BaseLayout melempar
 // "Invalid URL" dan bikin build gagal - ini penyebab deploy gagal terakhir).
 const SITE = 'https://iqbalrachman2905.github.io';
-const BASE = '/shanum-haven_modern_website';
+const BASE = '/amara_valley-elegant_website';
 
 export default defineConfig({
   site: SITE,

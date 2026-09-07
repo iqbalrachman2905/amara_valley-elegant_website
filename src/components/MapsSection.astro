@@ -1,74 +1,158 @@
 ---
+import { buildWaLink } from '../lib/format.js';
+
 const { content } = Astro.props;
+const waLink = buildWaLink(content.whatsapp_number, `Halo, saya ingin tahu akses & rute menuju ${content.hero_title || 'Amara Valley'}. Boleh info lokasi show unit?`);
+
+function parseNumStat(raw) {
+  if (raw === null || raw === undefined || raw === '') return null;
+  const m = String(raw).trim().match(/^(\d+)/);
+  return m ? Number(m[1]) : null;
+}
+
+const tolStat = parseNumStat(content.jarak_tol);
+const lrtStat = parseNumStat(content.jarak_lrt);
+const hasMap = !!(content.maps_link && content.maps_link.includes('maps'));
 ---
 
-{content.maps_link && (
-  <section id="lokasi" class="maps-section">
-    <div class="container">
-      <div class="maps-card" data-reveal>
-        <div class="maps-text">
-          <span class="eyebrow">Lokasi</span>
-          <h2>Cek Lokasi Lengkap di Google Maps</h2>
-          <p>Lihat rute, jarak, dan kondisi sekitar cluster langsung dari Google Maps.</p>
-        </div>
-        <div class="map-embed-wrapper">
-          <iframe 
-            src={content.maps_link} 
-            width="100%" 
-            height="400" 
-            style="border:0;" 
-            allowfullscreen="" 
-            loading="lazy" 
-            referrerpolicy="no-referrer-when-downgrade">
-          </iframe>
+<section id="lokasi" class="lokasi">
+  <div class="container lokasi-grid">
+    <div class="lokasi-copy" data-reveal>
+      <p class="eyebrow">Lokasi &amp; Akses</p>
+      <h2>
+        {content.tagline ? (
+          <>
+            {content.tagline.replace(/^Perumahan/i, '').replace(/^Modern/i, 'Modern').trim()}.
+          </>
+        ) : 'Pusat kota yang tetap tenang.'}
+      </h2>
+
+      <div class="lokasi-items">
+        {content.badge_text && (
+          <div class="lokasi-item">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span><strong>{content.badge_text}</strong></span>
+          </div>
+        )}
+        {tolStat && (
+          <div class="lokasi-item">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14M5 7l14 10M19 7 5 17" transform="rotate(45 12 12)"/><rect x="7" y="7" width="10" height="10" rx="2" transform="rotate(45 12 12)"/></svg>
+            <span><strong>±{tolStat} menit</strong> menuju akses tol</span>
+          </div>
+        )}
+        {lrtStat && (
+          <div class="lokasi-item">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="11" rx="2"/><path d="M4 10h16M8 6h8M7.5 14v4M16.5 14v4M5.5 21h13"/></svg>
+            <span><strong>±{lrtStat} menit</strong> {content.jarak_lrt.replace(/^\d+\s*/, '').toLowerCase()} LRT</span>
+          </div>
+        )}
+        <div class="lokasi-item">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+          <span>Survey langsung — <strong>gratis antar-jemput</strong> dari titik pertemuan</span>
         </div>
       </div>
+
+      <div class="lokasi-actions">
+        <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-ink btn-sm">Minta Titik Lokasi</a>
+        {content.instagram_url && (
+          <a href={content.instagram_url} target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">Instagram @{content.instagram_url.split('/').filter(Boolean).pop()}</a>
+        )}
+      </div>
     </div>
-  </section>
-)}
+
+    <div class="lokasi-map" data-reveal style="--reveal-delay: 120ms">
+      {hasMap ? (
+        <iframe
+          src={content.maps_link}
+          title="Peta lokasi Amara Valley — Kelapa Dua, Depok"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen
+        ></iframe>
+      ) : (
+        <div class="map-fallback">
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <p>Peta interaktif menyusul.</p>
+        </div>
+      )}
+      <span class="map-pin">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 2a7.5 7.5 0 0 0-7.5 7.5C4.5 15.5 12 22 12 22s7.5-6.5 7.5-12.5A7.5 7.5 0 0 0 12 2Zm0 10.2a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4Z"/></svg>
+        {content.badge_text || 'Amara Valley'}
+      </span>
+    </div>
+  </div>
+</section>
 
 <style>
-  .maps-section {
-    padding-block: var(--space-lg);
+  .lokasi {
+    background: var(--color-bg-main);
+    padding-block: clamp(64px, 9vw, 120px);
   }
-  .maps-card {
+  .lokasi-grid {
+    display: grid;
+    gap: clamp(30px, 5vw, 64px);
+    align-items: center;
+  }
+  .lokasi-copy { max-width: 500px; }
+  .lokasi-copy h2 { margin: 16px 0 26px; font-size: clamp(1.8rem, 3.4vw, 2.8rem); }
+  .lokasi-items { display: grid; gap: 0; border-top: 1px solid var(--color-border); }
+  .lokasi-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-block: 15px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-muted);
+    font-size: 0.95rem;
+  }
+  .lokasi-item svg { color: var(--color-secondary); flex: none; }
+  .lokasi-item strong { color: var(--color-primary); font-weight: 600; }
+  .lokasi-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+
+  .lokasi-map {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--color-border);
+    aspect-ratio: 4 / 3.4;
     background: var(--color-bg-paper);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
+  }
+  .lokasi-map iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    filter: saturate(0.82) contrast(1.02);
+  }
+  .map-fallback {
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
-    /* Dihapus align-items: flex-start supaya konten bisa melar (stretch) 100% */
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--color-muted);
   }
-  .maps-text {
-    width: 100%;
-  }
-  .eyebrow {
-    display: block;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.8rem;
+  .map-pin {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-bg-main);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 8px 16px;
+    font-size: 0.78rem;
     font-weight: 600;
-    color: var(--color-secondary);
-    margin-bottom: var(--space-xs);
-  }
-  .maps-text h2 {
-    font-size: 1.4rem;
-    margin-bottom: var(--space-xs);
+    letter-spacing: 0.04em;
+    box-shadow: var(--shadow-md);
     color: var(--color-primary);
   }
-  .maps-text p {
-    color: var(--color-navy-soft);
-    font-size: 0.92rem;
-  }
-  /* Styling khusus untuk bungkus peta */
-  .map-embed-wrapper {
-    width: 100%;
-    border-radius: var(--radius-md);
-    overflow: hidden; /* Supaya ujung iframe ngikutin radius bungkusnya */
-    box-shadow: var(--shadow-card);
-  }
-  .map-embed-wrapper iframe {
-    display: block; /* Menghilangkan gap putih di bawah iframe */
+  .map-pin svg { color: var(--color-secondary); }
+  @media (min-width: 1000px) {
+    .lokasi-grid { grid-template-columns: 0.85fr 1.15fr; }
   }
 </style>

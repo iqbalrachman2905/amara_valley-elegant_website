@@ -3,236 +3,277 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Navbar from '../components/Navbar.astro';
 import Hero from '../components/Hero.astro';
 import About from '../components/About.astro';
-import PromoSection from '../components/PromoSection.astro'; // Dipakai sebagai Banner
+import PromoSection from '../components/PromoSection.astro';
 import Trusted from '../components/Trusted.astro';
-import Facilities from '../components/Facilities.astro';
-import GalleryLightbox from '../components/GalleryLightbox.vue';
-import SiteplanSection from '../components/SiteplanSection.astro';
 import UnitFilterGrid from '../components/UnitFilterGrid.vue';
 import Spesifikasi from '../components/Spesifikasi.astro';
+import GallerySection from '../components/GallerySection.astro';
+import SiteplanSection from '../components/SiteplanSection.astro';
 import MapsSection from '../components/MapsSection.astro';
 import VideoSection from '../components/VideoSection.astro';
-import ProgressSection from '../components/ProgressSection.astro';
 import KprCalculator from '../components/KprCalculator.vue';
 import FaqHomepage from '../components/FaqHomepage.astro';
 import Testimonial from '../components/Testimonial.astro';
 import ArticlePreview from '../components/ArticlePreview.astro';
+import CTABand from '../components/CTABand.astro';
 import Footer from '../components/Footer.astro';
 
 import { getSiteData, findCoverImage } from '../lib/api.js';
 import { safeImage, drivePreviewUrl } from '../lib/image.js';
 import { extractYoutubeId } from '../lib/format.js';
 
-// Mengambil data dari endpoint Apps Script
+// --- Gambar dummy lokal (fallback saat foto asli dari Drive/API belum ada
+// atau tidak bisa diunduh build-time). Seluruhnya dioptimasi astro:assets
+// sehingga tetap tajam & ringan. ---
+import dummyHero from '../assets/dummy/hero.jpg';
+import dummyLiving from '../assets/dummy/interior-living.jpg';
+import dummyBedroom from '../assets/dummy/interior-bedroom.jpg';
+import dummyFacade from '../assets/dummy/unit-facade.jpg';
+import dummyStreet from '../assets/dummy/street.jpg';
+import dummySiteplan from '../assets/dummy/siteplan.jpg';
+import dummyDetail from '../assets/dummy/detail.jpg';
+
 const { content, units, gallery, articles, testimonials } = await getSiteData();
 
-// Mengolah gambar Hero (pakai URL thumbnail Drive - lebih reliable & bisa
-// diambil resolusi tinggi lewat param sz)
-const heroImage = findCoverImage(gallery, 'hero', 'hero');
-const heroImageResult = heroImage
-  ? await safeImage(drivePreviewUrl(heroImage.thumbnail_url || heroImage.image_url, 1920), { width: 1920, height: 1280, format: 'webp', quality: 70 })
-  : null;
+/** Proses gambar: coba URL remote dulu, kalau gagal/rusak pakai dummy lokal. */
+async function pickImage(remoteUrl, localAsset, { width = 1200, height, quality = 74, format = 'webp' } = {}) {
+  const h = height || Math.round(width * 0.75);
+  if (remoteUrl) {
+    try {
+      const r = await safeImage(drivePreviewUrl(remoteUrl, width), { width, height: h, format, quality });
+      if (r) {
+        return { src: r.src, width: r.attributes?.width || width, height: r.attributes?.height || h };
+      }
+    } catch { /* lanjut ke fallback */ }
+  }
+  if (localAsset) {
+    const l = await safeImage(localAsset, { width, height: h, format, quality });
+    if (l) {
+      return { src: l.src, width: l.attributes?.width || width, height: l.attributes?.height || h };
+    }
+  }
+  return null;
+}
 
-// Menghitung ketersediaan unit
-const availableUnits = units.filter(u => u.status !== 'Sold').length;
-const totalUnits = content.total_unit || units.length;
+// ---------- HERO ----------
+const heroCover = findCoverImage(gallery, 'hero', 'hero');
+const heroImageResult = await pickImage(heroCover?.thumbnail_url || heroCover?.image_url, dummyHero, { width: 1920, height: 1280, quality: 70 });
 
-// Memproses cover gambar untuk setiap tipe unit
+// ---------- TENTANG ----------
+const tentangCover = findCoverImage(gallery, 'tentang', '') || gallery.find(g => g.kategori === 'tentang');
+const aboutImgs = [
+  await pickImage(tentangCover?.thumbnail_url || tentangCover?.image_url, dummyLiving, { width: 900, height: 1120 }),
+  await pickImage(null, dummyDetail, { width: 620, height: 500 })
+].filter(Boolean);
+
+// ---------- SPESIFIKASI ----------
+const specImgs = [await pickImage(null, dummyBedroom, { width: 900, height: 680 })].filter(Boolean);
+
+// ---------- SITEPLAN ----------
+const siteplanResult = await pickImage(content.siteplan_thumbnail || content.siteplan, dummySiteplan, { width: 1500, height: 980 });
+
+// ---------- UNIT (cover per kode unit) ----------
+const FALLBACK_COVERS = [dummyFacade, dummyLiving, dummyStreet, dummyDetail];
 const unitsWithCover = await Promise.all(
-  units.map(async (unit) => {
+  units.map(async (unit, idx) => {
     const cover = findCoverImage(gallery, 'unit', unit.kode_unit);
-    const optimized = cover
-      ? await safeImage(drivePreviewUrl(cover.thumbnail_url || cover.image_url, 1000), { width: 800, format: 'webp', quality: 72 })
-      : null;
+    const src = await pickImage(cover?.thumbnail_url || cover?.image_url, FALLBACK_COVERS[idx % FALLBACK_COVERS.length], { width: 900, height: 640, quality: 72 });
     return {
       ...unit,
-      coverSrc: optimized?.src || null,
+      coverSrc: src?.src || null,
       coverCaption: cover?.caption || null
     };
   })
 );
 
-// Memproses item galeri umum (mengecualikan gambar khusus hero, fasilitas, dan tentang)
-const galleryItemsRaw = await Promise.all(
-  gallery
-    .filter(g => !['hero', 'facility', 'tentang'].includes(g.kategori) && g.image_url)
-    .sort((a, b) => (a.urutan || 0) - (b.urutan || 0))
-    .map(async (item) => {
-      const [thumb, full] = await Promise.all([
-        safeImage(drivePreviewUrl(item.thumbnail_url || item.image_url, 500), { width: 500, format: 'webp', quality: 70 }),
-        safeImage(drivePreviewUrl(item.thumbnail_url || item.image_url, 1400), { width: 1400, format: 'webp', quality: 78 })
-      ]);
-      if (!thumb || !full) return null;
-      return {
-        id: item.id,
-        caption: item.caption,
-        thumbSrc: thumb.src,
-        fullSrc: full.src
-      };
-    })
-);
-const galleryItems = galleryItemsRaw.filter(Boolean);
+// ---------- GALERI (foto unik per file, max 10; dummy penyusul) ----------
+const seenFiles = new Set();
+const uniqueGallery = gallery.filter(g => {
+  const fid = g.file_id || g.image_url;
+  if (!fid || seenFiles.has(fid)) return false;
+  seenFiles.add(fid);
+  return true;
+}).sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
 
-// Memproses foto progress (jika ada)
-const progressItemsRaw = await Promise.all(
-  gallery
-    .filter(g => g.kategori === 'progress' && g.image_url)
-    .sort((a, b) => (a.urutan || 0) - (b.urutan || 0))
-    .map(async (item) => {
-      const optimized = await safeImage(drivePreviewUrl(item.thumbnail_url || item.image_url, 1000), { width: 700, format: 'webp', quality: 72 });
-      if (!optimized) return null;
-      return {
-        id: item.id,
-        caption: item.caption,
-        src: optimized.src
-      };
-    })
-);
-const progressItems = progressItemsRaw.filter(Boolean);
-
-// Memproses cover 3 artikel terbaru
-const articlesWithCover = await Promise.all(
-  articles.slice(0, 3).map(async (a) => {
-    const optimized = a.cover_url
-      ? await safeImage(drivePreviewUrl(a.cover_url, 500), { width: 500, format: 'webp', quality: 72 })
-      : null;
-    return { ...a, coverSrc: optimized?.src || null };
+const galleryTilesRaw = await Promise.all(
+  uniqueGallery.slice(0, 12).map(async (item, i) => {
+    const base = item.thumbnail_url || item.image_url;
+    const thumb = await pickImage(base, null, { width: 640, height: 480, quality: 70 });
+    const full = await pickImage(base, null, { width: 1400, height: 1050, quality: 76 });
+    if (!thumb || !full) return null;
+    return { id: item.id || `g${i}`, thumbSrc: thumb.src, fullSrc: full.src, caption: item.caption || '' };
   })
 );
+let galleryItems = galleryTilesRaw.filter(Boolean).slice(0, 10);
 
-// Mengolah gambar siteplan (prioritas thumbnail Drive)
-const siteplanResult = (content.siteplan_thumbnail || content.siteplan)
-  ? await safeImage(drivePreviewUrl(content.siteplan_thumbnail || content.siteplan, 1920), { width: 1400, format: 'webp', quality: 78 })
-  : null;
+// Penyangga visual — dipakai kalau foto remote tak tersedia (mis. saat build
+// tanpa akses Drive): galeri tetap tampil cantik dengan visualisasi lokal.
+const DUMMY_TILES = [
+  { src: dummyLiving, cap: '' },
+  { src: dummyFacade, cap: '' },
+  { src: dummyStreet, cap: '' },
+  { src: dummyBedroom, cap: '' },
+  { src: dummyDetail, cap: '' },
+  { src: dummyHero, cap: '' }
+];
+if (galleryItems.length < 5) {
+  const usedKeys = new Set();
+  const extra = [];
+  for (const d of DUMMY_TILES) {
+    const key = d.src.src || d.src;
+    if (usedKeys.has(key)) continue;
+    usedKeys.add(key);
+    const thumb = await pickImage(null, d.src, { width: 640, height: 480, quality: 70 });
+    const full = await pickImage(null, d.src, { width: 1400, height: 1050, quality: 76 });
+    if (thumb && full) extra.push({ id: `d${extra.length}`, thumbSrc: thumb.src, fullSrc: full.src, caption: d.cap });
+    if (galleryItems.length + extra.length >= 6) break;
+  }
+  galleryItems = [...galleryItems, ...extra];
+}
 
-// Mengolah Video ID
+// ---------- VIDEO ----------
 const videoId = extractYoutubeId(content.video);
+
+// ---------- STAT ----------
+const isAvailable = (u) => !/sold/i.test(String(u.status || ''));
+const availableUnits = units.filter(isAvailable).length;
+const totalUnits = content.total_unit || `${units.length} Exclusive`;
+
+// ---------- ARTIKEL ----------
+const articlesWithCover = await Promise.all(
+  articles.slice(0, 3).map(async (a) => {
+    const cover = a.cover_url
+      ? await pickImage(a.cover_url, null, { width: 700, height: 440, quality: 72 })
+      : null;
+    return { ...a, coverSrc: cover?.src || null };
+  })
+);
 ---
 
 <BaseLayout
-  title={content.meta_title || content.hero_title}
+  title={content.meta_title || `${content.hero_title || 'Amara Valley'} — Kelapa Dua, Depok`}
   description={content.meta_description}
   ogImage={heroImageResult?.src}
   companyName={content.company_name}
   companyPhone={content.footer_phone}
   waNumber={content.whatsapp_number}
 >
-  <!-- 0. Navbar -->
+  <!-- 01 · Navigasi -->
   <Navbar content={content} />
 
-  <!-- 1. Hero -->
-  <Hero 
-    content={content} 
-    heroImageResult={heroImageResult} 
-    availableUnits={availableUnits} 
-    totalUnits={totalUnits} 
-  />
+  <main>
+    <!-- 02 · Hero -->
+    <Hero
+      content={content}
+      heroImageResult={heroImageResult}
+      availableUnits={availableUnits}
+      totalUnits={totalUnits}
+    />
 
-  <!-- 2. About -->
-  <About content={content} gallery={gallery} />
+    <!-- 03 · Tentang -->
+    <About content={content} aboutImgs={aboutImgs} />
 
-  <!-- 3. Banner (Promo Section) -->
-  <PromoSection content={content} />
+    <!-- 04 · Penawaran (Promo) -->
+    <PromoSection content={content} />
 
-  <!-- 4. Trusted -->
-  <Trusted content={content} />
+    <!-- 05 · Keunggulan pengembang -->
+    <Trusted content={content} />
 
-  <!-- 5. Facility (Fasilitas) -->
-  <Facilities gallery={gallery} />
-
-  <!-- 6. Galeri Visual (Pengganti area "Tipe Unit" visual sebelum Siteplan) -->
-  <!--
-  <section id="galeri" class="gallery-section">
-    <div class="container">
-      <div class="section-heading">
-        <span class="eyebrow">Galeri</span>
-        <h2>Rasakan Suasana Tinggal di Sini</h2>
+    <!-- 06 · Pilihan unit -->
+    <section id="unit" class="units-section">
+      <div class="container">
+        <div class="sec-head" data-reveal>
+          <div>
+            <p class="eyebrow">Pilihan Unit</p>
+            <h2>Tipe yang sesuai<br /><em class="accent-serif">gaya hidup</em> Anda</h2>
+          </div>
+          <p class="sec-note">
+            {availableUnits > 0 ? `${availableUnits} unit masih tersedia` : 'Seluruh unit dalam proses'} —
+            setiap unit dapat dikonsultasikan langsung lewat WhatsApp.
+          </p>
+        </div>
+        <div data-reveal style="--reveal-delay: 120ms">
+          <UnitFilterGrid client:visible units={unitsWithCover} waNumber={content.whatsapp_number} />
+        </div>
       </div>
-      <GalleryLightbox client:visible items={galleryItems} />
-    </div>
-  </section>
-  -->
+    </section>
 
-  <!-- 7. Siteplan -->
-  <SiteplanSection imageResult={siteplanResult} />
+    <!-- 07 · Spesifikasi material -->
+    <Spesifikasi content={content} specImgs={specImgs} />
 
-  <!-- 8. Pilihan Unit (Filter Tipe Unit Interaktif) -->
-  <section id="unit" class="units-section">
-    <div class="container">
-    <div class="section-heading" data-reveal>
-      <span class="eyebrow">Pilihan Unit</span>
-      <h2>Temukan Tipe yang Sesuai</h2>
-    </div>
-      <UnitFilterGrid client:visible units={unitsWithCover} waNumber={content.whatsapp_number} />
-    </div>
-  </section>
+    <!-- 08 · Galeri -->
+    <GallerySection items={galleryItems} />
 
-  <!-- 9. Spesifikasi (Komponen Baru) -->
-  <Spesifikasi content={content} />
+    <!-- 09 · Siteplan -->
+    <SiteplanSection content={content} imageResult={siteplanResult} />
 
-  <!-- 10. Maps -->
-  <MapsSection content={content} />
+    <!-- 10 · Lokasi -->
+    <MapsSection content={content} />
 
-  <!-- 11. Video -->
-  <VideoSection videoId={videoId} />
+    <!-- 11 · Video -->
+    <VideoSection videoId={videoId} />
 
-  <!-- Ekstra: Progress Pembangunan (Opsional untuk tetap ada) -->
-  <ProgressSection items={progressItems} />
-
-  <!-- 12. Kalkulator KPR -->
-  <section id="kpr" class="kpr-section">
-    <div class="container container-narrow">
-      <div class="section-heading" data-reveal>
-        <span class="eyebrow">Simulasi KPR</span>
-        <h2>Cek Estimasi Cicilan Bulanan</h2>
+    <!-- 12 · Simulasi KPR -->
+    <section id="kpr" class="kpr-section">
+      <div class="container container-narrow">
+        <div class="sec-head sec-head-center" data-reveal>
+          <p class="eyebrow">Simulasi KPR</p>
+          <h2>Hitung cicilan,<br /><em class="accent-serif">tenang</em> ke depannya.</h2>
+          <p class="sec-note">Geser angka sesuai kemampuan Anda — estimasi kasar, bukan penawaran resmi bank.</p>
+        </div>
+        <div data-reveal style="--reveal-delay: 140ms">
+          <KprCalculator client:visible defaultPrice={content.price_from || 900000000} />
+        </div>
       </div>
-      <KprCalculator client:visible defaultPrice={content.price_from || 900000000} />
-    </div>
-  </section>
+    </section>
 
-  <!-- 13. FAQ (Komponen Baru) -->
-  <FaqHomepage content={content} />
+    <!-- 13 · FAQ -->
+    <FaqHomepage content={content} />
 
-  <!-- 14. Testimoni -->
-  <Testimonial testimonials={testimonials} content={content} />
+    <!-- 14 · Testimoni -->
+    <Testimonial testimonials={testimonials} />
 
-  <!-- 15. Artikel Terbaru -->
-  <ArticlePreview articles={articlesWithCover} />
+    <!-- 15 · Artikel terbaru -->
+    <ArticlePreview articles={articlesWithCover} content={content} />
 
-  <!-- 16. Footer -->
+    <!-- 16 · CTA akhir -->
+    <CTABand content={content} />
+  </main>
+
+  <!-- 17 · Footer -->
   <Footer content={content} />
-
 </BaseLayout>
 
 <style>
   .units-section {
-    padding-block: var(--space-xl);
-    background: var(--color-paper);
-  }
-  .gallery-section {
-    padding-block: var(--space-xl);
+    background: var(--color-bg-main);
+    padding-block: clamp(72px, 10vw, 124px);
   }
   .kpr-section {
-    padding-block: var(--space-xl);
-    background: var(--color-paper);
+    background: var(--color-bg-main);
+    padding-block: clamp(64px, 9vw, 116px);
   }
-  .container-narrow {
-    max-width: 760px;
+  .container-narrow { max-width: var(--container-narrow); }
+  .sec-head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: clamp(30px, 4vw, 52px);
   }
-  .section-heading {
+  .sec-head h2 {
+    margin-top: 14px;
+    font-size: clamp(1.85rem, 3.6vw, 2.9rem);
+  }
+  .sec-head h2 em { font-size: 1.05em; }
+  .sec-note {
+    max-width: 46ch;
+    color: var(--color-muted);
+    font-size: 0.94rem;
+  }
+  .sec-head-center {
     text-align: center;
-    margin-bottom: var(--space-lg);
+    align-items: center;
   }
-  .eyebrow {
-    display: block;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-gold);
-    margin-bottom: 6px;
-  }
-  .section-heading h2 {
-    font-size: clamp(1.6rem, 3vw, 2.2rem);
-  }
+  .sec-head-center .eyebrow { justify-content: center; }
+  .sec-head-center .eyebrow::before { display: none; }
 </style>

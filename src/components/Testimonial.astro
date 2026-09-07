@@ -1,245 +1,126 @@
 ---
-import Avatar from './Avatar.astro';
-import { guessGender, prettifyName } from '../lib/gender.js';
-import { buildWaLink } from '../lib/format.js';
+import { prettifyName } from '../lib/gender.js';
 
-const { testimonials = [], content = {} } = Astro.props;
+const { testimonials = [] } = Astro.props;
 
-// Cuma tampilkan entri yang beneran ada isinya (nama ATAU teks) - baris
-// kosong di sheet jangan sampai jadi kartu hantu di halaman.
 const items = (testimonials || [])
   .map((t) => {
     const name = prettifyName(t.name);
     const text = String(t.text || '').trim();
-    // rate bisa datang sebagai angka, string angka, atau kosong - normalisasi
-    // dan clamp 1..5. NaN/invalid => null (bintang gak dirender).
     const rateNum = Number(t.rate);
-    const rate = Number.isFinite(rateNum) && rateNum > 0
-      ? Math.min(5, Math.round(rateNum))
-      : null;
+    const rate = Number.isFinite(rateNum) && rateNum > 0 ? Math.min(5, Math.round(rateNum)) : null;
     return { ...t, name, text, rate };
   })
   .filter((t) => t.name || t.text);
 
 const hasItems = items.length > 0;
-
-const waLink = buildWaLink(
-  content.whatsapp_number,
-  `Halo, saya penghuni/klien ${content.hero_title || 'properti ini'} dan mau berbagi pengalaman.`
-);
-
-// Array [1..5] buat render bintang.
 const STARS = [1, 2, 3, 4, 5];
+const initials = (n) => n.trim().split(/\s+/).map((p) => p[0] || '').slice(0, 2).join('').toUpperCase();
 ---
 
-<section id="testimoni" class="testimonial-section">
-  <div class="container">
-    <div class="section-heading" data-reveal>
-      <span class="eyebrow">Testimoni</span>
-      <h2>Kata Klien &amp; Penghuni Kami</h2>
-      <p class="section-sub">
-        Cerita asli dari mereka yang sudah memilih tinggal di
-        {content.hero_title || 'hunian kami'}.
-      </p>
-    </div>
+{hasItems && (
+  <section class="testi">
+    <div class="container">
+      <div class="testi-head" data-reveal>
+        <p class="eyebrow">Testimoni</p>
+        <h2>Kata mereka yang sudah <em class="accent-serif">tinggal</em></h2>
+      </div>
 
-    {hasItems ? (
-      <div class="testimonial-grid">
+      <div class="testi-list">
         {items.map((t, i) => (
-          <figure class="testimonial-card" data-reveal style={`--reveal-delay: ${(i % 3) * 90}ms`}>
-            <div class="quote-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                <path d="M10.7 5.6c-4.2 1.5-7 5-7 9.6 0 2.4 1.4 4.2 3.6 4.2 1.9 0 3.3-1.4 3.3-3.2 0-1.8-1.3-3-3-3-.3 0-.7 0-1 .2.5-2.5 2.3-4.6 4.8-5.7l-.7-2.1zm9.3 0c-4.2 1.5-7 5-7 9.6 0 2.4 1.4 4.2 3.6 4.2 1.9 0 3.3-1.4 3.3-3.2 0-1.8-1.3-3-3-3-.3 0-.7 0-1 .2.5-2.5 2.3-4.6 4.8-5.7l-.7-2.1z" />
-              </svg>
-            </div>
-
-            {t.rate !== null && (
-              <div
-                class="stars"
-                role="img"
-                aria-label={`Rating ${t.rate} dari 5 bintang`}
-              >
-                {STARS.map((s) => (
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="17"
-                    height="17"
-                    fill={s <= t.rate ? 'currentColor' : 'none'}
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9 2.9-6z" />
-                  </svg>
-                ))}
-              </div>
-            )}
-
-            {t.text && <blockquote class="testimonial-text">{t.text}</blockquote>}
-
-            <figcaption class="testimonial-person">
-              <Avatar gender={guessGender(t.name)} name={t.name} photoUrl={t.photo_url || t.avatar_url || null} size={48} />
-              <div>
-                <span class="testimonial-name">{t.name || 'Pemberi Testimoni'}</span>
-                <span class="testimonial-role">{content.company_name || 'Klien Kami'}</span>
-              </div>
+          <figure class="testi-card" data-reveal style={`--reveal-delay: ${i * 90}ms`}>
+            <blockquote>
+              <span class="testi-quote-mark" aria-hidden="true">&ldquo;</span>
+              <p>{t.text}</p>
+            </blockquote>
+            <figcaption>
+              <span class="testi-avatar" aria-hidden="true">{initials(t.name || 'Konsumen')}</span>
+              <span class="testi-who">
+                <span class="testi-name">{t.name || 'Konsumen'}</span>
+                {t.rate && (
+                  <span class="testi-stars" aria-label={`Rating ${t.rate} dari 5`}>
+                    {STARS.map((s) => (
+                      <svg key={s} viewBox="0 0 24 24" width="13" height="13" fill={s <= t.rate ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.3-5.7-3.1-5.7 3.1 1.2-6.3L2.8 9.5l6.4-.8L12 2.8z"/></svg>
+                    ))}
+                  </span>
+                )}
+              </span>
             </figcaption>
           </figure>
         ))}
       </div>
-    ) : (
-      <div class="testimonial-empty" data-reveal>
-        <div class="empty-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-          </svg>
-        </div>
-        <h3>Testimoni Akan Segera Hadir</h3>
-        <p>
-          Kami sedang mengumpulkan cerita dari penghuni dan klien
-          {content.hero_title ? content.hero_title : 'kami'}. Jadikan pengalaman
-          Anda yang pertama kami ceritakan di sini.
-        </p>
-        {content.whatsapp_number && (
-          <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-outline-dark empty-cta">
-            Bagikan Pengalaman Anda
-          </a>
-        )}
-      </div>
-    )}
-  </div>
-</section>
+    </div>
+  </section>
+)}
 
 <style>
-  .testimonial-section {
-    padding-block: var(--space-xl);
+  .testi {
     background: var(--color-bg-main);
+    padding-block: clamp(56px, 8vw, 108px);
   }
-  .section-heading {
-    text-align: center;
-    margin-bottom: var(--space-lg);
-  }
-  .eyebrow {
-    display: block;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-gold);
-    margin-bottom: var(--space-xs);
-  }
-  .section-heading h2 {
-    font-size: clamp(1.6rem, 3vw, 2.2rem);
-    font-weight: 800;
-    color: var(--color-navy);
-  }
-  .section-sub {
-    max-width: 520px;
-    margin: var(--space-xs) auto 0;
-    color: var(--color-navy-soft);
-    font-size: 0.95rem;
-  }
-
-  /* --- Grid kartu testimoni --- */
-  .testimonial-grid {
+  .testi-head { text-align: center; margin-bottom: clamp(28px, 4vw, 46px); }
+  .testi-head .eyebrow::before { display: none; }
+  .testi-head .eyebrow { justify-content: center; }
+  .testi-head h2 { margin-top: 14px; font-size: clamp(1.8rem, 3.4vw, 2.7rem); }
+  .testi-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     gap: var(--space-md);
   }
-  .testimonial-card {
-    position: relative;
+  .testi-card {
+    margin: 0;
     background: var(--color-bg-paper);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: calc(var(--space-md) + 8px) var(--space-md) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: clamp(26px, 3vw, 40px);
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
-    transition: transform var(--duration-normal) var(--ease-out),
-      box-shadow var(--duration-normal) var(--ease-out);
+    gap: 22px;
+    justify-content: space-between;
   }
-  .testimonial-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
+  .testi-card blockquote { margin: 0; position: relative; }
+  .testi-quote-mark {
+    font-family: var(--font-display);
+    font-size: 3.4rem;
+    line-height: 0.6;
+    color: var(--color-secondary);
+    opacity: 0.75;
+    display: block;
+    height: 26px;
   }
-  .quote-mark {
-    position: absolute;
-    top: var(--space-sm);
-    right: var(--space-sm);
-    color: color-mix(in srgb, var(--color-gold) 45%, white);
+  .testi-card blockquote p {
+    font-family: var(--font-display);
+    font-size: clamp(1.12rem, 1.6vw, 1.4rem);
+    font-style: italic;
+    line-height: var(--leading-snug);
+    color: var(--color-primary);
   }
-  .stars {
-    display: inline-flex;
-    gap: 2px;
-    color: var(--color-gold);
-  }
-  .testimonial-text {
-    font-size: 0.95rem;
-    line-height: 1.65;
-    color: var(--color-navy);
-    flex-grow: 1;
-  }
-  .testimonial-person {
+  .testi-card figcaption {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    border-top: var(--border-width) solid var(--color-border);
-    padding-top: var(--space-sm);
+    gap: 14px;
   }
-  .avatar {
-    flex-shrink: 0;
+  .testi-avatar {
+    width: 46px;
+    height: 46px;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: var(--radius-full);
-    display: block;
+    background: var(--color-dark);
+    color: var(--color-gold-light);
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    letter-spacing: 0.04em;
   }
-  .avatar-photo {
-    object-fit: cover;
+  .testi-who { display: flex; flex-direction: column; gap: 5px; }
+  .testi-name {
+    font-weight: 600;
+    font-size: 0.98rem;
+    text-transform: capitalize;
   }
-  .testimonial-name {
-    display: block;
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: var(--color-navy);
-    line-height: 1.3;
-  }
-  .testimonial-role {
-    display: block;
-    font-size: 0.78rem;
-    color: var(--color-navy-soft);
-  }
-
-  /* --- Empty state (data testimoni belum ada di sheet) --- */
-  .testimonial-empty {
-    max-width: 520px;
-    margin-inline: auto;
-    text-align: center;
-    background: var(--color-bg-paper);
-    border: 1.5px dashed color-mix(in srgb, var(--color-gold) 55%, transparent);
-    border-radius: var(--radius-lg);
-    padding: calc(var(--space-lg) - 8px) var(--space-md) var(--space-lg);
-  }
-  .empty-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto var(--space-sm);
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: var(--color-gold-soft);
-    color: color-mix(in srgb, var(--color-gold) 75%, var(--color-navy));
-  }
-  .testimonial-empty h3 {
-    font-size: 1.25rem;
-    color: var(--color-navy);
-    margin-bottom: var(--space-xs);
-  }
-  .testimonial-empty p {
-    font-size: 0.92rem;
-    color: var(--color-navy-soft);
-    margin-bottom: var(--space-md);
-  }
-  .empty-cta {
-    padding: 11px 26px;
-    font-size: 0.9rem;
+  .testi-stars { display: inline-flex; gap: 2px; color: var(--color-secondary); }
+  @media (min-width: 700px) {
+    .testi-list { grid-template-columns: repeat(2, 1fr); }
   }
 </style>

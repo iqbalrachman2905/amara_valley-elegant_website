@@ -1,0 +1,126 @@
+---
+import { buildWaLink, cleanPhoneNumber } from '../lib/format.js';
+
+const { content } = Astro.props;
+const waLink = buildWaLink(content.whatsapp_number, `Halo, saya ingin booking / survey ${content.hero_title || 'Amara Valley'} (${content.promo_dp || ''} ${content.promo_booking || ''}).`);
+
+const igHandle = content.instagram_url ? content.instagram_url.split('/').filter(Boolean).pop() : null;
+const phone = content.footer_phone ? `+${cleanPhoneNumber(content.footer_phone).replace(/^62/, '62 ').replace(/(\d{4})(?=\d)/g, '$1 ')}` : null;
+
+const rawPrice = Number(content.price_from);
+const priceStart = rawPrice
+  ? rawPrice >= 1_000_000_000
+    ? `Rp ${(rawPrice / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 1 })} M`
+    : `Rp ${Math.round(rawPrice / 1e6)} jutaan`
+  : 'Rp 900 jutaan';
+---
+
+<section class="cta">
+  <div class="cta-glow" aria-hidden="true"></div>
+  <div class="container cta-inner">
+    <p class="cta-kicker" data-reveal>
+      <span class="cta-line" aria-hidden="true"></span>
+      Mulai dari {priceStart} · {content.promo_dp || 'DP 0%'}
+    </p>
+    <h2 class="cta-title" data-reveal>
+      Rumah yang elegan <em class="accent-serif">tidak menunggu</em> terlalu lama.
+    </h2>
+    <p class="cta-desc" data-reveal>Konsultasi gratis, tanpa komitmen. Tim kami siap mengantar Anda melihat langsung unit yang tersedia.</p>
+
+    <div class="cta-actions" data-reveal>
+      <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-gold">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.464 3.482 1.345 4.997L2 22l5.117-1.334a9.965 9.965 0 0 0 4.887 1.28h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.928-7.07a9.935 9.935 0 0 0-7.073-2.876zm0 18.184a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.037.792.81-2.96-.194-.304a8.147 8.147 0 0 1-1.247-4.348c0-4.507 3.667-8.174 8.176-8.174 2.183 0 4.235.852 5.78 2.398a8.12 8.12 0 0 1 2.394 5.783c0 4.508-3.667 8.13-8.217 8.13zm4.468-6.12c-.248-.124-1.4-.69-1.616-.768-.217-.078-.375-.116-.533.116-.157.233-.61.769-.747.927-.137.158-.275.178-.51.059-.234-.12-.99-.365-1.885-1.164-.698-.622-1.168-1.388-1.304-1.62-.137-.233-.015-.36.102-.477.105-.105.275-.273.412-.411.137-.137.183-.233.275-.389.091-.156.045-.291-.02-.408-.065-.116-.583-1.404-.799-1.922-.21-.505-.424-.437-.583-.445l-.497-.01c-.172 0-.45.064-.685.32-.234.256-.895.874-.895 2.132 0 1.257.915 2.472 1.042 2.649.128.176 1.797 2.746 4.356 3.852.608.263 1.084.42 1.454.538.626.199 1.195.171 1.645.104.508-.076 1.4-.573 1.6-1.126.198-.553.198-1.026.138-1.126-.06-.1-.217-.16-.451-.279z"/></svg>
+        Booking via WhatsApp
+      </a>
+      <a href="#unit" class="btn btn-ghost-light">Lihat Unit Tersedia</a>
+    </div>
+
+    {(phone || igHandle) && (
+      <div class="cta-meta" data-reveal>
+        {phone && <a href={`tel:${cleanPhoneNumber(content.footer_phone)}`}>{phone}</a>}
+        {igHandle && (
+          <a href={content.instagram_url} target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5"/><circle cx="12" cy="12" r="4.4"/><circle cx="17.6" cy="6.4" r="1.2" fill="currentColor" stroke="none"/></svg>
+            @{igHandle}
+          </a>
+        )}
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .cta {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-dark);
+    color: var(--color-bg-main);
+    padding-block: clamp(80px, 11vw, 150px);
+    text-align: center;
+  }
+  .cta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-secondary), transparent);
+    opacity: 0.85;
+  }
+  .cta-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(48% 62% at 50% 108%, color-mix(in srgb, var(--color-secondary) 17%, transparent), transparent 72%);
+    pointer-events: none;
+  }
+  .cta-inner { position: relative; max-width: 780px; }
+  .cta-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-gold-light);
+  }
+  .cta-line { width: 42px; height: 1px; background: var(--color-gold-light); }
+  .cta-title {
+    color: var(--color-bg-main);
+    font-size: clamp(2rem, 5vw, 3.7rem);
+    line-height: 1.1;
+    margin: 24px auto 18px;
+  }
+  .cta-title em { color: var(--color-gold-light); }
+  .cta-desc {
+    color: color-mix(in srgb, var(--color-bg-main) 70%, transparent);
+    margin-inline: auto;
+    max-width: 46ch;
+  }
+  .cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    margin-top: 36px;
+  }
+  .cta-meta {
+    margin-top: 34px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 26px;
+  }
+  .cta-meta a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: color-mix(in srgb, var(--color-bg-main) 76%, transparent);
+    text-decoration: none;
+    font-size: 0.88rem;
+    letter-spacing: 0.03em;
+  }
+  .cta-meta a:hover { color: var(--color-gold-light); }
+</style>
