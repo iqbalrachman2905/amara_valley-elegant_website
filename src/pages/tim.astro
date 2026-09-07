@@ -8,9 +8,7 @@ import { getSiteData } from '../lib/api.js';
 import { safeImage, drivePreviewUrl } from '../lib/image.js';
 import { buildWaLink } from '../lib/format.js';
 
-// Foto profil dummy — dipakai selama kolom photo di sheet Person kosong.
-// Begitu sheet diisi & backend mengekspos `persons`, foto asli otomatis
-// menggantikan (atau gambar Drive dipakai saat photo berisi link).
+// Foto profil dummy — selama kolom photo di sheet Person kosong.
 import dummy1 from '../assets/dummy/team/person-1.jpg';
 import dummy2 from '../assets/dummy/team/person-2.jpg';
 import dummy3 from '../assets/dummy/team/person-3.jpg';
@@ -26,7 +24,7 @@ function splitStrengths(raw) {
   const s = clean(raw);
   if (!s) return [];
   const parts = s.includes('::') ? s.split('::') : s.split(/,|;/);
-  return parts.map(p => p.trim()).filter(Boolean).slice(0, 5);
+  return parts.map(p => p.trim()).filter(Boolean).slice(0, 4);
 }
 
 function expDigits(raw) {
@@ -35,19 +33,19 @@ function expDigits(raw) {
 }
 
 async function personPhoto(photoUrl, idx) {
-  const opts = { width: 760, height: 920, quality: 76, format: 'webp' };
+  const opts = { width: 880, height: 760, quality: 78, format: 'webp' };
   if (photoUrl) {
     try {
-      const r = await safeImage(drivePreviewUrl(photoUrl, 760), { ...opts });
-      if (r) return { src: r.src, width: r.attributes?.width || 760, height: r.attributes?.height || 920 };
+      const r = await safeImage(drivePreviewUrl(photoUrl, 880), { ...opts });
+      if (r) return { src: r.src, width: r.attributes?.width || 880, height: r.attributes?.height || 760 };
     } catch { /* lanjut dummy */ }
   }
   const l = await safeImage(DUMMY_PHOTOS[idx % DUMMY_PHOTOS.length], { ...opts });
-  if (l) return { src: l.src, width: l.attributes?.width || 760, height: l.attributes?.height || 920 };
+  if (l) return { src: l.src, width: l.attributes?.width || 880, height: l.attributes?.height || 760 };
   return null;
 }
 
-const people = await Promise.all(
+const people = (await Promise.all(
   persons.map(async (p, i) => ({
     name: clean(p.name),
     position: clean(p.position),
@@ -58,7 +56,11 @@ const people = await Promise.all(
     photo: await personPhoto(p.photo, i),
     waLink: buildWaLink(content.whatsapp_number, `Halo, saya ingin konsultasi dengan ${clean(p.name)} (${clean(p.position)}) di ${content.hero_title || 'Amara Valley'}. Boleh dijadwalkan?`)
   }))
-).then(list => list.filter(p => p.name || p.position));
+)).filter(p => p.name || p.position);
+
+// Statistik ringkas — dihitung otomatis dari data.
+const totalYears = people.reduce((sum, p) => sum + (p.expNum || 0), 0);
+const teamSize = people.length;
 
 const waGeneral = buildWaLink(content.whatsapp_number, `Halo, saya ingin bicara dengan tim ${content.company_name || 'Amara Land'} tentang ${content.hero_title || 'Amara Valley'}.`);
 ---
@@ -73,74 +75,66 @@ const waGeneral = buildWaLink(content.whatsapp_number, `Halo, saya ingin bicara 
   <Navbar content={content} />
 
   <main class="tim-page">
-    <!-- Kepala halaman -->
+    <!-- ===== Kepala halaman ===== -->
     <header class="tim-hero">
       <div class="container">
         <p class="eyebrow" data-reveal>Tim Kami</p>
-        <h1 data-reveal style="--reveal-delay: 90ms">
-          Orang-orang di balik<br /><em class="accent-serif">{content.hero_title || 'Amara Valley'}</em>
+        <h1 data-reveal style="--reveal-delay: 80ms">
+          Profesional di balik
+          <em class="accent-serif">{content.hero_title || 'Amara Valley'}</em>
         </h1>
-        <div class="tim-hero-row" data-reveal style="--reveal-delay: 180ms">
+        <div class="tim-hero-bottom" data-reveal style="--reveal-delay: 160ms">
           <p class="sec-lead">
-            Dari konsultasi pertama, proses KPR, hingga serah terima kunci —
-            tim {content.company_name || 'Amara Land'} mendampingi Anda di setiap langkah.
-            {content.badge_text ? ` Kami beroperasi dari klaster ${content.badge_text}.` : ''}
+            Dari konsultasi pertama hingga serah terima kunci — tim
+            {content.company_name || 'Amara Land'} mendampingi Anda dengan pelayanan yang hangat dan jujur.
           </p>
-          <a href={waGeneral} target="_blank" rel="noopener noreferrer" class="btn btn-ink btn-sm tim-hero-cta">
-            Bicara dengan Tim
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6"/></svg>
-          </a>
+          <div class="tim-hero-meta">
+            {teamSize > 0 && <span class="meta-pill"><strong>{teamSize}</strong> Profesional</span>}
+            {totalYears > 0 && <span class="meta-pill"><strong>+{totalYears}</strong> Tahun pengalaman</span>}
+          </div>
         </div>
       </div>
     </header>
 
-    <!-- Daftar profil -->
+    <!-- ===== Grid kartu tim ===== -->
     {people.length > 0 ? (
-      <section class="tim-list" aria-label="Profil pegawai">
+      <section class="team" aria-label="Profil pegawai">
         <div class="container">
-          <div class="persons">
+          <div class="team-grid">
             {people.map((p, i) => (
-              <article class="person" data-reveal style={`--reveal-delay: ${(i % 2) * 90}ms`}>
-                <div class="person-photo">
+              <article class="card" data-reveal style={`--reveal-delay: ${(i % 4) * 80}ms`}>
+                <div class="card-media">
                   {p.photo ? (
-                    <figure class="person-figure">
-                      <img src={p.photo.src} alt={p.name ? `Foto ${p.name}` : 'Foto anggota tim'} width={p.photo.width} height={p.photo.height} loading="lazy" />
-                    </figure>
+                    <img src={p.photo.src} alt={p.name ? `Foto ${p.name}` : 'Foto anggota tim'} width={p.photo.width} height={p.photo.height} loading="lazy" />
                   ) : (
-                    <div class="person-figure person-figure-empty" aria-hidden="true">
-                      <span>{(p.name || p.position || '?').trim().charAt(0)}</span>
-                    </div>
+                    <div class="card-media-empty" aria-hidden="true">{(p.name || p.position || '?').trim().charAt(0)}</div>
                   )}
-                  {p.expNum && (
-                    <span class="person-exp">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4h8v3M8 11h.01M16 11h.01M8 15h.01M12 15h.01"/></svg>
-                      {p.expNum} tahun
-                    </span>
-                  )}
-                  <span class="person-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="card-no" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  {p.position && <span class="card-role">{p.position}</span>}
                 </div>
 
-                <div class="person-body">
-                  {p.position && <p class="person-position">{p.position}</p>}
-                  {p.name && <h2 class="person-name">{p.name}</h2>}
-                  {p.quote && (
-                    <blockquote class="person-quote">
-                      <svg class="quote-mark" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M10 7H6a3 3 0 0 0-3 3v7h7v-7H6.5A1.5 1.5 0 0 1 8 8.5V7h2V7zm11 0h-4a3 3 0 0 0-3 3v7h7v-7h-3.5a1.5 1.5 0 0 1 1.5-1.5V7h2V7z"/></svg>
-                      {p.quote}
-                    </blockquote>
+                <div class="card-body">
+                  <h2 class="card-name">{p.name}</h2>
+
+                  {p.experience && (
+                    <p class="card-exp">
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4h8v3M8 11h.01M16 11h.01M8 15h.01M12 15h.01"/></svg>
+                      {p.experience}
+                    </p>
                   )}
+
+                  {p.quote && <blockquote class="card-quote">&ldquo;{p.quote}&rdquo;</blockquote>}
+
                   {p.strengths.length > 0 && (
-                    <div class="person-strength">
-                      <p class="person-strength-label">Keunggulan</p>
-                      <ul class="strength-chips">
-                        {p.strengths.map((s) => <li key={s}>{s}</li>)}
-                      </ul>
-                    </div>
+                    <ul class="card-chips" aria-label="Keunggulan">
+                      {p.strengths.map((s) => <li key={s}>{s}</li>)}
+                    </ul>
                   )}
+
                   {p.name && (
-                    <a href={p.waLink} target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm person-wa">
+                    <a href={p.waLink} target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm card-wa">
                       <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.464 3.482 1.345 4.997L2 22l5.117-1.334a9.965 9.965 0 0 0 4.887 1.28h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.928-7.07a9.935 9.935 0 0 0-7.073-2.876zm0 18.184a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.037.792.81-2.96-.194-.304a8.147 8.147 0 0 1-1.247-4.348c0-4.507 3.667-8.174 8.176-8.174 2.183 0 4.235.852 5.78 2.398a8.12 8.12 0 0 1 2.394 5.783c0 4.508-3.667 8.13-8.217 8.13zm4.468-6.12c-.248-.124-1.4-.69-1.616-.768-.217-.078-.375-.116-.533.116-.157.233-.61.769-.747.927-.137.158-.275.178-.51.059-.234-.12-.99-.365-1.885-1.164-.698-.622-1.168-1.388-1.304-1.62-.137-.233-.015-.36.102-.477.105-.105.275-.273.412-.411.137-.137.183-.233.275-.389.091-.156.045-.291-.02-.408-.065-.116-.583-1.404-.799-1.922-.21-.505-.424-.437-.583-.445l-.497-.01c-.172 0-.45.064-.685.32-.234.256-.895.874-.895 2.132 0 1.257.915 2.472 1.042 2.649.128.176 1.797 2.746 4.356 3.852.608.263 1.084.42 1.454.538.626.199 1.195.171 1.645.104.508-.076 1.4-.573 1.6-1.126.198-.553.198-1.026.138-1.126-.06-.1-.217-.16-.451-.279z"/></svg>
-                      Konsultasi dengan {p.name.split(' ')[0]}
+                      Konsultasi via WhatsApp
                     </a>
                   )}
                 </div>
@@ -148,20 +142,16 @@ const waGeneral = buildWaLink(content.whatsapp_number, `Halo, saya ingin bicara 
             ))}
           </div>
 
-          <div class="tim-note" data-reveal>
+          <p class="team-note" data-reveal>
             <span class="gold-hairline" aria-hidden="true"></span>
-            <p>
-              Foto di atas merupakan <strong>contoh ilustrasi</strong> dan akan diganti dengan foto resmi tim
-              sesuai data sheet <em>Person</em> pada spreadsheet.
-            </p>
-          </div>
+            Profil &amp; foto di atas menyesuaikan data sheet <em>Person</em> pada spreadsheet —
+            foto saat ini ilustrasi dan akan diganti foto resmi saat kolom <em>photo</em> diisi.
+          </p>
         </div>
       </section>
     ) : (
-      <section class="tim-empty">
-        <div class="container">
-          <p class="tim-empty-text">Profil tim sedang dilengkapi — segera hadir.</p>
-        </div>
+      <section class="team-empty">
+        <div class="container"><p>Profil tim sedang dilengkapi — segera hadir.</p></div>
       </section>
     )}
 
@@ -172,196 +162,203 @@ const waGeneral = buildWaLink(content.whatsapp_number, `Halo, saya ingin bicara 
 </BaseLayout>
 
 <style>
+  /* ===== Kepala halaman ===== */
   .tim-hero {
-    background: var(--color-bg-paper);
-    padding: clamp(150px, 18vh, 190px) 0 clamp(46px, 6vw, 76px);
+    background:
+      radial-gradient(60% 90% at 88% 0%, color-mix(in srgb, var(--color-secondary) 7%, transparent), transparent 70%),
+      var(--color-bg-paper);
+    padding: clamp(140px, 16vh, 180px) 0 clamp(40px, 5vw, 64px);
     border-bottom: 1px solid var(--color-border);
   }
   .tim-hero h1 {
-    font-size: clamp(2.3rem, 5.6vw, 4.4rem);
-    margin: 18px 0 26px;
+    font-size: clamp(2.3rem, 5.6vw, 4.3rem);
+    margin: 16px 0 24px;
+    max-width: 20ch;
   }
   .tim-hero h1 em { font-size: 1.06em; }
-  .tim-hero-row {
+  .tim-hero-bottom {
     display: flex;
     flex-wrap: wrap;
-    gap: 18px 34px;
     align-items: flex-end;
     justify-content: space-between;
+    gap: 18px 30px;
   }
-  .tim-hero-row .sec-lead { max-width: 58ch; }
-
-  .tim-list {
+  .tim-hero-bottom .sec-lead { max-width: 56ch; margin: 0; }
+  .tim-hero-meta { display: flex; flex-wrap: wrap; gap: 10px; }
+  .meta-pill {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
     background: var(--color-bg-main);
-    padding-block: clamp(28px, 4vw, 54px) clamp(64px, 9vw, 110px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 9px 18px;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    box-shadow: var(--shadow-sm);
   }
-  .persons { display: grid; gap: clamp(46px, 6vw, 72px); }
+  .meta-pill strong {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--color-primary);
+  }
 
-  .person {
+  /* ===== Grid kartu ===== */
+  .team {
+    background: var(--color-bg-main);
+    padding-block: clamp(44px, 6vw, 80px) clamp(52px, 7vw, 92px);
+  }
+  .team-grid {
     display: grid;
-    gap: clamp(26px, 4vw, 54px);
-    padding-block: clamp(26px, 3.4vw, 44px);
-    border-bottom: 1px solid var(--color-border);
-  }
-  .person:first-of-type { border-top: 1px solid var(--color-border); }
-  @media (min-width: 960px) {
-    .person {
-      grid-template-columns: minmax(240px, 360px) 1fr;
-      align-items: center;
-    }
-    .person:nth-child(even) .person-photo { order: 2; }
-    .person:nth-child(even) .person-body { order: 1; text-align: right; }
-    .person:nth-child(even) .person-body > * { margin-inline-start: auto; }
+    gap: clamp(18px, 2.4vw, 28px);
+    grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
   }
 
-  .person-photo { position: relative; }
-  .person-figure {
+  .card {
     position: relative;
-    margin: 0;
-    aspect-ratio: 5 / 6;
-    border-radius: var(--radius-md);
+    background: var(--color-bg-main);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    background: var(--color-bg-paper);
-    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--duration-normal) var(--ease-out),
+      box-shadow var(--duration-normal) var(--ease-out),
+      border-color var(--duration-normal) var(--ease-out);
   }
-  .person-figure::before {
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-xl);
+    border-color: color-mix(in srgb, var(--color-secondary) 42%, var(--color-border));
+  }
+
+  .card-media { position: relative; overflow: hidden; }
+  .card-media img {
+    width: 100%;
+    aspect-ratio: 6 / 4.6;
+    object-fit: cover;
+    object-position: center 18%;
+    transition: transform 1.1s var(--ease-out), filter 0.5s var(--ease-out);
+  }
+  .card:hover .card-media img { transform: scale(1.05); }
+  .card-media::after {
     content: '';
     position: absolute;
-    inset: -12px -12px auto auto;
-    width: 40%;
-    height: 30%;
-    border-top: 1px solid var(--color-secondary);
-    border-right: 1px solid var(--color-secondary);
-    border-radius: 0 var(--radius-md) 0 0;
-    z-index: 2;
+    inset: 0;
+    background: linear-gradient(to top, color-mix(in srgb, var(--color-dark) 34%, transparent), transparent 42%);
+    pointer-events: none;
   }
-  .person-figure img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top center;
-    transition: transform 1.2s var(--ease-out);
-  }
-  .person:hover .person-figure img { transform: scale(1.035); }
-  .person-figure-empty {
+  .card-media-empty {
+    aspect-ratio: 6 / 4.6;
     display: grid;
     place-items: center;
+    background: var(--color-bg-paper);
+    font-family: var(--font-display);
+    font-size: 4.6rem;
     color: var(--color-secondary);
   }
-  .person-figure-empty span {
+  .card-no {
+    position: absolute;
+    top: 12px;
+    left: 14px;
     font-family: var(--font-display);
-    font-size: 5rem;
+    font-size: 0.92rem;
+    letter-spacing: 0.08em;
+    color: var(--color-bg-main);
+    background: color-mix(in srgb, var(--color-dark) 46%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(250, 248, 243, 0.24);
+    border-radius: var(--radius-full);
+    padding: 5px 12px;
+    z-index: 2;
   }
-  .person-exp {
+  .card-role {
     position: absolute;
     left: 14px;
-    bottom: 14px;
+    bottom: 12px;
+    z-index: 2;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--color-bg-main);
+    background: rgba(20, 16, 10, 0.34);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(250, 248, 243, 0.2);
+    border-radius: var(--radius-full);
+    padding: 6px 13px;
+    max-width: calc(100% - 28px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: clamp(18px, 2vw, 24px);
+    flex: 1;
+  }
+  .card-name {
+    font-size: clamp(1.4rem, 1.9vw, 1.75rem);
+    line-height: 1.15;
+  }
+  .card-exp {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    background: var(--color-bg-main);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-md);
-    border-radius: var(--radius-full);
-    padding: 7px 15px;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    color: var(--color-primary);
-  }
-  .person-exp svg { color: var(--color-secondary); }
-  .person-index {
-    position: absolute;
-    right: 12px;
-    top: -18px;
-    font-family: var(--font-display);
-    font-size: 3.4rem;
-    line-height: 1;
-    color: color-mix(in srgb, var(--color-primary) 12%, transparent);
-    z-index: 3;
-  }
-
-  .person-body { max-width: 640px; display: flex; flex-direction: column; align-items: flex-start; }
-  .person-position {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.28em;
     color: var(--color-secondary);
-    margin-bottom: 10px;
+    letter-spacing: 0.03em;
   }
-  .person-name {
-    font-size: clamp(1.7rem, 3vw, 2.4rem);
-    margin-bottom: 16px;
-  }
-  .person-quote {
-    margin: 0 0 22px;
-    position: relative;
-    padding-left: 30px;
-    font-family: var(--font-display);
+  .card-exp svg { color: var(--color-secondary); }
+  .card-quote {
+    margin: 0;
+    font-size: 0.9rem;
     font-style: italic;
-    font-size: clamp(1.04rem, 1.5vw, 1.2rem);
-    line-height: var(--leading-snug);
-    color: var(--color-primary);
-  }
-  .quote-mark {
-    position: absolute;
-    left: 0;
-    top: 2px;
-    color: var(--color-secondary);
-    opacity: 0.9;
-  }
-  .person-strength { margin-bottom: 24px; }
-  .person-strength-label {
-    font-size: 0.64rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.24em;
+    font-family: var(--font-display);
+    line-height: var(--leading-normal);
     color: var(--color-muted);
-    margin-bottom: 10px;
   }
-  .strength-chips {
+  .card-chips {
     list-style: none;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 4px;
   }
-  .strength-chips li {
-    font-size: 0.8rem;
-    font-weight: 500;
+  .card-chips li {
+    font-size: 0.72rem;
+    font-weight: 600;
     color: var(--color-primary);
-    border: 1px solid var(--color-border);
+    background: var(--color-bg-paper);
     border-radius: var(--radius-full);
-    padding: 6px 14px;
-    background: var(--color-bg-main);
+    padding: 5px 11px;
   }
-  @media (min-width: 960px) {
-    .person:nth-child(even) .person-quote { padding-left: 0; padding-right: 30px; }
-    .person:nth-child(even) .quote-mark { left: auto; right: 0; }
-    .person:nth-child(even) .strength-chips { justify-content: flex-end; }
-  }
+  .card-wa { width: 100%; margin-top: 6px; }
 
-  .tim-note {
-    margin-top: clamp(36px, 5vw, 56px);
+  .team-note {
+    margin-top: clamp(34px, 5vw, 52px);
     display: grid;
-    gap: 16px;
-  }
-  .tim-note p {
-    font-size: 0.85rem;
+    gap: 14px;
     color: var(--color-muted);
-    max-width: 56ch;
+    font-size: 0.82rem;
+    max-width: 60ch;
   }
-  .tim-note strong { color: var(--color-primary); }
+  .team-note em { color: var(--color-primary); }
 
-  .tim-empty {
+  .team-empty {
     background: var(--color-bg-main);
     padding-block: 90px;
-  }
-  .tim-empty-text {
     text-align: center;
     color: var(--color-muted);
     font-family: var(--font-display);
     font-style: italic;
-    font-size: 1.2rem;
   }
 </style>
