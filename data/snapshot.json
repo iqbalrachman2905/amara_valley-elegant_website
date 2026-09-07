@@ -976,35 +976,35 @@
   "generated_at": "2026-09-07T06:45:00.000Z",
   "persons": [
     {
-      "name": "Raka Pramudya",
-      "position": "Marketing Executive",
-      "experience": "8 tahun",
-      "quote": "Rumah yang baik adalah rumah yang membuat penghuninya merasa tenang setiap kali pulang.",
-      "strength": "Komunikatif::Negosiasi::Jaringan luas",
+      "name": "Ari Kuncoro Untung",
+      "position": "Owner",
+      "experience": 10,
+      "quote": "Membangun bisnis berkelanjutan yang terus berinovasi dan memberikan nilai terbaik bagi pelanggan serta memajukan kesejahteraan seluruh tim.",
+      "strength": "Kepemimpinan strategis, visi jangka panjang yang kuat, kemampuan mengambil keputusan berisiko tinggi, serta keahlian mengelola sumber daya untuk pertumbuhan bisnis yang berkelanjutan.",
       "photo": ""
     },
     {
-      "name": "Salsabila Zahra",
-      "position": "Customer Relations",
-      "experience": "5 tahun",
-      "quote": "Setiap pertanyaan konsumen layak dijawab dengan jujur — kepercayaan dibangun dari detail kecil.",
-      "strength": "Teliti::Empati::Pelayanan Prima",
-      "photo": ""
-    },
-    {
-      "name": "Dimas Arya Pratama",
-      "position": "Sales & Marketing Lead",
-      "experience": "10 tahun",
-      "quote": "Rumah bukan sekadar aset; ia awal dari kehidupan baru bagi setiap keluarga.",
-      "strength": "Strategi Penjualan::Mentoring Tim::Integritas",
-      "photo": ""
-    },
-    {
-      "name": "Nadia Ramadhani",
+      "name": "Iqbal Rachman",
       "position": "Digital Marketing",
-      "experience": "6 tahun",
-      "quote": "Setiap kunjungan ke klaster mengingatkan saya mengapa pekerjaan ini begitu bermakna.",
-      "strength": "Kreatif::Analitik::Konten Visual",
+      "experience": 8,
+      "quote": "Memperluas jangkauan pasar melalui strategi digital yang terukur, kreatif, dan inovatif demi meningkatkan daya saing bisnis serta loyalitas pelanggan secara berkelanjutan.",
+      "strength": "Keahlian analisis data mendalam, penguasaan strategi pemasaran digital modern, kreativitas tinggi dalam merancang kampanye, serta kemampuan mengoptimalkan ROI dan jangkauan audiens secara efektif.",
+      "photo": ""
+    },
+    {
+      "name": "Widodo Kusuma",
+      "position": "Executive Marketing",
+      "experience": 7,
+      "quote": "Meningkatkan pertumbuhan bisnis secara signifikan melalui strategi pemasaran eksekutif yang inovatif, memperluas kemitraan strategis, dan memaksimalkan kepuasan serta loyalitas pelanggan jangka panjang.",
+      "strength": "Kemampuan komunikasi persuasif yang tinggi, pemahaman mendalam tentang pasar, kepemimpinan tim penjualan, serta keahlian merancang strategi pemasaran yang efektif untuk meningkatkan pendapatan perusahaan.",
+      "photo": ""
+    },
+    {
+      "name": "Hendro Kurniawan",
+      "position": "Architect",
+      "experience": 9,
+      "quote": "Merancang karya arsitektur fungsional dan estetis yang berlanjut, menghadirkan inovasi ruang untuk meningkatkan kualitas hidup masyarakat secara menyeluruh.",
+      "strength": "Kreativitas tinggi dalam merancang struktur yang estetik dan fungsional, pemikiran spasial yang kuat, presisi teknis, serta keahlian memadukan visi klien dengan standar keamanan bangunan.",
       "photo": ""
     }
   ]

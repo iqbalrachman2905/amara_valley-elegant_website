@@ -18,13 +18,28 @@ const DUMMY_PHOTOS = [dummy1, dummy2, dummy3, dummy4];
 
 const { content, persons = [] } = await getSiteData();
 
-const clean = (v) => String(v || '').trim();
+const clean = (v) => String(v ?? '').trim();
 
+// Strength di sheet dipisah koma & sering diawali konjungsi ("serta", "dan").
 function splitStrengths(raw) {
-  const s = clean(raw);
+  const s = clean(raw).replace(/^["“”']+|["“”']+$/g, '');
   if (!s) return [];
   const parts = s.includes('::') ? s.split('::') : s.split(/,|;/);
-  return parts.map(p => p.trim()).filter(Boolean).slice(0, 4);
+  return parts
+    .map(p => p.replace(/^(serta|dan|serta kemampuan|dan kemampuan)\s+/i, '').trim())
+    .filter(Boolean)
+    .slice(0, 5);
+}
+
+// Experience berupa angka ("10") → tampilkan "10 tahun pengalaman".
+function expLabel(raw) {
+  const s = clean(raw);
+  if (!s) return '';
+  return /^\d+(\.\d+)?$/.test(s) ? `${s} tahun pengalaman` : s;
+}
+
+function cleanQuote(raw) {
+  return clean(raw).replace(/^["“”']+|["“”']+$/g, '');
 }
 
 function expDigits(raw) {
@@ -49,9 +64,9 @@ const people = (await Promise.all(
   persons.map(async (p, i) => ({
     name: clean(p.name),
     position: clean(p.position),
-    experience: clean(p.experience),
+    experience: expLabel(p.experience),
     expNum: expDigits(p.experience),
-    quote: clean(p.quote),
+    quote: cleanQuote(p.quote),
     strengths: splitStrengths(p.strength),
     photo: await personPhoto(p.photo, i),
     waLink: buildWaLink(content.whatsapp_number, `Halo, saya ingin konsultasi dengan ${clean(p.name)} (${clean(p.position)}) di ${content.hero_title || 'Amara Valley'}. Boleh dijadwalkan?`)
@@ -126,9 +141,17 @@ const waGeneral = buildWaLink(content.whatsapp_number, `Halo, saya ingin bicara 
                   {p.quote && <blockquote class="card-quote">&ldquo;{p.quote}&rdquo;</blockquote>}
 
                   {p.strengths.length > 0 && (
-                    <ul class="card-chips" aria-label="Keunggulan">
-                      {p.strengths.map((s) => <li key={s}>{s}</li>)}
-                    </ul>
+                    <div class="card-strength">
+                      <p class="card-strength-label">Keahlian &amp; kekuatan</p>
+                      <ul class="strength-list">
+                        {p.strengths.map((s) => (
+                          <li key={s}>
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
 
                   {p.name && (
@@ -144,8 +167,8 @@ const waGeneral = buildWaLink(content.whatsapp_number, `Halo, saya ingin bicara 
 
           <p class="team-note" data-reveal>
             <span class="gold-hairline" aria-hidden="true"></span>
-            Profil &amp; foto di atas menyesuaikan data sheet <em>Person</em> pada spreadsheet —
-            foto saat ini ilustrasi dan akan diganti foto resmi saat kolom <em>photo</em> diisi.
+            Nama, jabatan, dan profil di atas mengikuti data sheet <em>Person</em> pada spreadsheet.
+            Foto saat ini masih ilustrasi — akan otomatis terganti foto resmi begitu kolom <em>photo</em> diisi.
           </p>
         </div>
       </section>
@@ -210,8 +233,8 @@ const waGeneral = buildWaLink(content.whatsapp_number, `Halo, saya ingin bicara 
   }
   .team-grid {
     display: grid;
-    gap: clamp(18px, 2.4vw, 28px);
-    grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+    gap: clamp(20px, 2.4vw, 30px);
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
   }
 
   .card {
@@ -325,23 +348,40 @@ const waGeneral = buildWaLink(content.whatsapp_number, `Halo, saya ingin bicara 
     line-height: var(--leading-normal);
     color: var(--color-muted);
   }
-  .card-chips {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+  .card-strength {
     margin-top: auto;
-    padding-top: 4px;
+    padding-top: 6px;
+    width: 100%;
   }
-  .card-chips li {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--color-primary);
-    background: var(--color-bg-paper);
-    border-radius: var(--radius-full);
-    padding: 5px 11px;
+  .card-strength-label {
+    font-size: 0.64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--color-muted);
+    margin-bottom: 10px;
   }
-  .card-wa { width: 100%; margin-top: 6px; }
+  .strength-list {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+  }
+  .strength-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 0.86rem;
+    line-height: var(--leading-snug);
+    color: var(--color-muted);
+  }
+  .strength-list svg {
+    flex: none;
+    color: var(--color-secondary);
+    margin-top: 3px;
+  }
+  .card-wa { width: 100%; margin-top: 18px; }
 
   .team-note {
     margin-top: clamp(34px, 5vw, 52px);
