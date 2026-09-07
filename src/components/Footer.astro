@@ -1,0 +1,343 @@
+---
+import { buildWaLink } from '../lib/format.js';
+import { withBase } from '../lib/paths.js';
+
+const { content } = Astro.props;
+const waLink = buildWaLink(content.whatsapp_number, `Halo, saya tertarik dengan ${content.hero_title || 'properti ini'}.`);
+const year = new Date().getFullYear();
+
+// Link section homepage harus pake prefix base biar tetap jalan dari
+// halaman artikel (di GitHub Pages base-nya /shanum-haven_modern_website/).
+const home = withBase('');
+
+const exploreLinks = [
+  { href: `${home}#tentang`, label: 'Tentang Kami' },
+  { href: `${home}#unit`, label: 'Pilihan Unit' },
+  { href: `${home}#siteplan`, label: 'Siteplan' },
+  { href: `${home}#spesifikasi`, label: 'Spesifikasi' },
+  { href: `${home}#fasilitas`, label: 'Fasilitas' },
+  { href: `${home}#lokasi`, label: 'Lokasi' },
+  { href: `${home}#kpr`, label: 'Simulasi KPR' },
+  { href: withBase('artikel/'), label: 'Artikel' },
+];
+
+// Kontak dibangun dinamis - kolom kosong gak perlu dirender sama sekali.
+const contactLinks = [];
+if (content.footer_phone) contactLinks.push({ href: `tel:${String(content.footer_phone).replace(/[^0-9+]/g, '')}`, label: content.footer_phone, icon: 'phone' });
+if (content.footer_email) contactLinks.push({ href: `mailto:${content.footer_email}`, label: content.footer_email, icon: 'mail' });
+if (content.whatsapp_number) contactLinks.push({ href: waLink, label: 'Chat WhatsApp', icon: 'wa', external: true });
+if (content.maps_link) contactLinks.push({ href: content.maps_link, label: 'Lihat di Google Maps', icon: 'map', external: true });
+
+const socialLinks = [];
+if (content.instagram_url) socialLinks.push({ href: content.instagram_url, label: 'Instagram', icon: 'ig', external: true });
+
+const companyName = content.company_name || 'Arciv Property';
+const showAddress = content.address && content.address !== '(opsional, alamat kantor kalau ada)';
+
+// Ikon kecil inline (stroke) biar gak nambah request font/JS icon library.
+const ICONS = {
+  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  wa: '<path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.464 3.482 1.345 4.997L2 22l5.117-1.334a9.965 9.965 0 0 0 4.887 1.28h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.928-7.07a9.935 9.935 0 0 0-7.073-2.876zm0 18.184a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.037.792.81-2.96-.194-.304a8.147 8.147 0 0 1-1.247-4.348c0-4.507 3.667-8.174 8.176-8.174 2.183 0 4.235.852 5.78 2.398a8.12 8.12 0 0 1 2.394 5.783c0 4.508-3.667 8.13-8.217 8.13zm4.468-6.12c-.248-.124-1.4-.69-1.616-.768-.217-.078-.375-.116-.533.116-.157.233-.61.769-.747.927-.137.158-.275.178-.51.059-.234-.12-.99-.365-1.885-1.164-.698-.622-1.168-1.388-1.304-1.62-.137-.233-.015-.36.102-.477.105-.105.275-.273.412-.411.137-.137.183-.233.275-.389.091-.156.045-.291-.02-.408-.065-.116-.583-1.404-.799-1.922-.21-.505-.424-.437-.583-.445l-.497-.01c-.172 0-.45.064-.685.32-.234.256-.895.874-.895 2.132 0 1.257.915 2.472 1.042 2.649.128.176 1.797 2.746 4.356 3.852.608.263 1.084.42 1.454.538.626.199 1.195.171 1.645.104.508-.076 1.4-.573 1.6-1.126.198-.553.198-1.026.138-1.126-.06-.1-.217-.16-.451-.279z" fill="currentColor" stroke="none"/>',
+  map: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+  ig: '<rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/>',
+};
+---
+
+<!-- CTA band: ditutup dengan ajakan kuat sebelum footer -->
+<section class="cta-band">
+  <div class="container cta-inner">
+    <div class="cta-copy" data-reveal>
+      <span class="cta-eyebrow">{content.promo_dp || 'DP 0%'} &bull; {content.promo_booking || 'Booking Fee Terjangkau'}</span>
+      <h2>Siap Punya Rumah Baru di {content.hero_title || 'Cibubur'}?</h2>
+      <p>{content.tagline || 'Konsultasi gratis dengan tim marketing kami'}</p>
+    </div>
+    <div class="cta-actions" data-reveal style="--reveal-delay: 90ms">
+      <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-gold cta-btn">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.464 3.482 1.345 4.997L2 22l5.117-1.334a9.965 9.965 0 0 0 4.887 1.28h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.928-7.07a9.935 9.935 0 0 0-7.073-2.876zm0 18.184a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.037.792.81-2.96-.194-.304a8.147 8.147 0 0 1-1.247-4.348c0-4.507 3.667-8.174 8.176-8.174 2.183 0 4.235.852 5.78 2.398a8.12 8.12 0 0 1 2.394 5.783c0 4.508-3.667 8.13-8.217 8.13zm4.468-6.12c-.248-.124-1.4-.69-1.616-.768-.217-.078-.375-.116-.533.116-.157.233-.61.769-.747.927-.137.158-.275.178-.51.059-.234-.12-.99-.365-1.885-1.164-.698-.622-1.168-1.388-1.304-1.62-.137-.233-.015-.36.102-.477.105-.105.275-.273.412-.411.137-.137.183-.233.275-.389.091-.156.045-.291-.02-.408-.065-.116-.583-1.404-.799-1.922-.21-.505-.424-.437-.583-.445l-.497-.01c-.172 0-.45.064-.685.32-.234.256-.895.874-.895 2.132 0 1.257.915 2.472 1.042 2.649.128.176 1.797 2.746 4.356 3.852.608.263 1.084.42 1.454.538.626.199 1.195.171 1.645.104.508-.076 1.4-.573 1.6-1.126.198-.553.198-1.026.138-1.126-.06-.1-.217-.16-.451-.279z"/></svg>
+        Chat Sekarang
+      </a>
+      {content.footer_phone && (
+        <a href={`tel:${String(content.footer_phone).replace(/[^0-9+]/g, '')}`} class="cta-phone">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS.phone} />
+          {content.footer_phone}
+        </a>
+      )}
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <!-- Kolom 1: brand + deskripsi singkat -->
+      <div class="footer-col footer-brand">
+        <a href={home} class="brand" aria-label={`${companyName} - kembali ke beranda`}>
+          <span class="brand-mark" aria-hidden="true">{companyName.trim().charAt(0)}</span>
+          <span class="brand-name">{companyName}</span>
+        </a>
+        <p class="brand-tagline">
+          {content.hero_subtitle || content.tagline || 'Hunian modern yang nyaman untuk keluarga Anda.'}
+        </p>
+        {showAddress && <p class="brand-address">{content.address}</p>}
+        {socialLinks.length > 0 && (
+          <div class="footer-social">
+            {socialLinks.map((s) => (
+              <a
+                href={s.href}
+                target={s.external ? '_blank' : undefined}
+                rel={s.external ? 'noopener noreferrer' : undefined}
+                class="social-btn"
+                aria-label={s.label}
+              >
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS[s.icon]} />
+                <span>{s.label}</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- Kolom 2: jelajahi -->
+      <nav class="footer-col" aria-label="Tautan footer">
+        <h3 class="footer-title">Jelajahi</h3>
+        <ul class="footer-links">
+          {exploreLinks.map((link) => (
+            <li><a href={link.href}>{link.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+
+      <!-- Kolom 3: kontak (cuma dirender kalau ada isinya) -->
+      {contactLinks.length > 0 && (
+        <div class="footer-col">
+          <h3 class="footer-title">Hubungi Kami</h3>
+          <ul class="footer-links footer-contact">
+            {contactLinks.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  target={link.external ? '_blank' : undefined}
+                  rel={link.external ? 'noopener noreferrer' : undefined}
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="link-icon" set:html={ICONS[link.icon]} />
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+
+    <div class="footer-bottom">
+      <p>{content.copyright_text || `© ${year} ${companyName}. All rights reserved.`}</p>
+      <a href="#" class="footer-top-link" aria-label="Kembali ke atas">
+        Kembali ke Atas
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  /* --- CTA band --- */
+  .cta-band {
+    background:
+      radial-gradient(1100px 420px at 85% -60%, color-mix(in srgb, var(--color-secondary) 22%, transparent), transparent 70%),
+      var(--color-primary);
+    color: var(--color-bg-main);
+    padding-block: calc(var(--space-lg) + 8px);
+  }
+  .cta-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    align-items: flex-start;
+  }
+  .cta-eyebrow {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--color-secondary);
+    margin-bottom: 10px;
+  }
+  .cta-inner h2 {
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    margin-bottom: 6px;
+  }
+  .cta-inner p {
+    color: color-mix(in srgb, var(--color-bg-main) 75%, transparent);
+    font-size: 0.98rem;
+  }
+  .cta-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+  .cta-btn {
+    padding: 15px 34px;
+    font-size: 1rem;
+  }
+  .cta-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-bg-main);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-bottom: 2px solid color-mix(in srgb, var(--color-secondary) 55%, transparent);
+    padding-bottom: 3px;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+  .cta-phone:hover {
+    border-color: var(--color-secondary);
+  }
+
+  /* --- Footer utama: navy gelap premium --- */
+  .site-footer {
+    background:
+      radial-gradient(900px 380px at 8% -30%, color-mix(in srgb, var(--color-secondary) 9%, transparent), transparent 70%),
+      color-mix(in srgb, var(--color-primary) 88%, black);
+    color: color-mix(in srgb, var(--color-bg-main) 78%, transparent);
+    padding-block: calc(var(--space-lg) + 4px) var(--space-md);
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    padding-bottom: var(--space-lg);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    margin-bottom: var(--space-sm);
+  }
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--color-secondary) 75%, white), var(--color-secondary));
+    color: var(--color-primary);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--color-bg-main);
+  }
+  .brand-tagline {
+    font-size: 0.9rem;
+    max-width: 300px;
+    margin-bottom: var(--space-xs);
+  }
+  .brand-address {
+    font-size: 0.85rem;
+    max-width: 300px;
+  }
+  .footer-social {
+    display: flex;
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+  }
+  .social-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid color-mix(in srgb, var(--color-bg-main) 20%, transparent);
+    color: color-mix(in srgb, var(--color-bg-main) 85%, transparent);
+    text-decoration: none;
+    font-size: 0.83rem;
+    font-weight: 500;
+    transition: border-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+  }
+  .social-btn:hover {
+    border-color: var(--color-secondary);
+    color: var(--color-bg-main);
+    background: color-mix(in srgb, var(--color-secondary) 12%, transparent);
+  }
+
+  .footer-title {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-secondary);
+    margin-bottom: var(--space-sm);
+  }
+  .footer-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .footer-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: color-mix(in srgb, var(--color-bg-main) 72%, transparent);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+  }
+  .footer-links a:hover {
+    color: var(--color-secondary);
+    transform: translateX(3px);
+  }
+  .link-icon {
+    color: var(--color-secondary);
+    flex-shrink: 0;
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-xs);
+    border-top: 1px solid color-mix(in srgb, var(--color-bg-main) 12%, transparent);
+    padding-top: var(--space-md);
+    font-size: 0.8rem;
+    color: color-mix(in srgb, var(--color-bg-main) 55%, transparent);
+  }
+  .footer-top-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: color-mix(in srgb, var(--color-bg-main) 70%, transparent);
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  .footer-top-link:hover {
+    color: var(--color-secondary);
+  }
+
+  @media (min-width: 640px) {
+    .cta-inner {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-grid {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+  }
+</style>

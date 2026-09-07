@@ -1,0 +1,170 @@
+---
+const { content } = Astro.props;
+const faqKeys = Object.keys(content).filter(key => key.startsWith('faq_home_'));
+const faqs = faqKeys.map(key => {
+  const [question, answer] = content[key].split('::');
+  return { question, answer };
+}).filter(item => item.question && item.answer);
+
+// Split jadi 2 kolom: kolom kiri baca top-down dulu, baru kolom kanan.
+const half = Math.ceil(faqs.length / 2);
+const colLeft = faqs.slice(0, half);
+const colRight = faqs.slice(half);
+---
+
+<section id="faq-home" class="faq-section">
+  <div class="container">
+    <div class="section-heading" data-reveal>
+      <span class="eyebrow">Bantuan</span>
+      <h2>Pertanyaan Seputar PKP2</h2>
+    </div>
+
+    <div class="faq-grid">
+      <div class="faq-col">
+        {colLeft.map((faq) => (
+          <details class="faq-item">
+            <summary>
+              <span class="faq-question">{faq.question}</span>
+              <span class="faq-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"></path>
+                </svg>
+              </span>
+            </summary>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">{faq.answer}</div>
+            </div>
+          </details>
+        ))}
+      </div>
+
+      <div class="faq-col">
+        {colRight.map((faq) => (
+          <details class="faq-item">
+            <summary>
+              <span class="faq-question">{faq.question}</span>
+              <span class="faq-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"></path>
+                </svg>
+              </span>
+            </summary>
+            <div class="faq-answer">
+              <div class="faq-answer-inner">{faq.answer}</div>
+            </div>
+          </details>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  details > summary {
+    list-style: none;
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-section {
+    padding-block: var(--space-xl);
+    background: var(--color-bg-paper);
+  }
+  .section-heading {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+  }
+  .eyebrow {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+    margin-bottom: var(--space-xs);
+  }
+  .section-heading h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    color: var(--color-primary);
+  }
+
+  .faq-grid {
+    max-width: 1000px;
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+    align-items: start;
+  }
+  .faq-col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .faq-item {
+    background: var(--color-bg-main);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: box-shadow var(--duration-slow) var(--ease-out);
+  }
+  .faq-item:hover {
+    box-shadow: var(--shadow-soft);
+  }
+  .faq-item summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    cursor: pointer;
+  }
+  .faq-question {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-primary);
+    transition: color var(--duration-slow) var(--ease-out);
+  }
+  .faq-item:hover .faq-question {
+    color: var(--color-secondary);
+  }
+  .faq-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--color-gold-soft);
+    color: var(--color-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  .faq-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .faq-item[open] .faq-icon {
+    transform: rotate(180deg);
+  }
+  .faq-answer {
+    padding: 0 var(--space-md) var(--space-md);
+  }
+  .faq-answer-inner {
+    padding-top: var(--space-sm);
+    border-top: var(--border-width) solid var(--color-border);
+    color: var(--color-navy-soft);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 767px) {
+    .faq-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

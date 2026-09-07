@@ -1,0 +1,35 @@
+---
+import { withBase } from '../lib/paths.js';
+
+const { pillarArticle } = Astro.props; // { slug, title } | null
+---
+
+{pillarArticle && (
+  <a href={withBase(`artikel/${pillarArticle.slug}/`)} class="pillar-banner">
+    <span class="pillar-icon">📖</span>
+    <span>
+      <strong>Baca panduan lengkap:</strong> {pillarArticle.title}
+    </span>
+  </a>
+)}
+
+<style>
+  .pillar-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--color-gold-soft);
+    color: var(--color-navy);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: var(--space-lg);
+  }
+  .pillar-icon {
+    font-size: 1.1rem;
+  }
+  .pillar-banner strong {
+    color: var(--color-navy);
+  }
+</style>

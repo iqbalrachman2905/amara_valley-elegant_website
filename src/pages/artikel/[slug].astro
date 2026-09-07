@@ -1,0 +1,295 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import RelatedUnits from '../../components/RelatedUnits.astro';
+import ArticleToc from '../../components/ArticleToc.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import PillarBanner from '../../components/PillarBanner.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
+import BackToTop from '../../components/BackToTop.astro';
+import { extractToc, stripLeadingH1 } from '../../lib/content.js';
+import { getSiteData, getArticleBySlug, findCoverImage } from '../../lib/api.js';
+import { formatDate } from '../../lib/format.js';
+import { withBase } from '../../lib/paths.js';
+import { safeImage, drivePreviewUrl } from '../../lib/image.js';
+
+// getStaticPaths jalan sekali saat build - inilah yang bikin tiap artikel
+// jadi file HTML fisik sendiri (/artikel/judul-slug/index.html), BUKAN
+// halaman yang dirender client-side. Ini kuncinya biar Google & preview
+// share WA/Instagram bisa baca konten & OG tag masing-masing artikel.
+export async function getStaticPaths() {
+  const { articles } = await getSiteData();
+
+  // Jaring pengaman: kalau ada 2+ baris kebetulan punya slug sama (misal
+  // akibat copy-paste baris tanpa ngosongin id/slug), jangan biarin build
+  // gagal total gara-gara 1 baris data yang salah - ambil yang published_at
+  // paling baru, yang lain diabaikan. Tetap perbaiki datanya di sheet, ini
+  // cuma jaga-jaga.
+  const bySlug = new Map();
+  for (const a of articles) {
+    const existing = bySlug.get(a.slug);
+    if (!existing || new Date(a.published_at) > new Date(existing.published_at)) {
+      bySlug.set(a.slug, a);
+    }
+  }
+
+  // Fetch semua artikel - kalau 1 gagal, skip (jangan gagalkan seluruh build)
+  const results = [];
+  for (const a of bySlug.values()) {
+    try {
+      const full = await getArticleBySlug(a.slug);
+      results.push({ params: { slug: a.slug }, props: { article: full } });
+    } catch (err) {
+      // Log tapi jangan throw - build tetap jalan untuk artikel lain
+      console.error(`[SKIP] Gagal render artikel "${a.slug}": ${err.message}`);
+    }
+  }
+  
+  return results;
+}
+
+const { article } = Astro.props;
+
+// Fetch data - kalau gagal, tampilkan error yang berguna
+let content, articles, units, gallery;
+try {
+  ({ content, articles, units, gallery } = await getSiteData());
+} catch (err) {
+  // Data minimal agar halaman tetap render dengan pesan error
+  content = { company_name: 'Arciv Property', hero_title: 'Error' };
+  articles = [];
+  units = [];
+  gallery = [];
+  console.error(`[ARTIKEL] Gagal fetch site data: ${err.message}`);
+}
+
+let coverSrc = null;
+if (article.cover_url) {
+  const optimized = await safeImage(drivePreviewUrl(article.cover_url, 1200), { width: 1200, format: 'webp', quality: 75 });
+  coverSrc = optimized?.src || null;
+}
+
+// Pillar page: 1 artikel ditandain sebagai "hub" lewat Content.pillar_slug.
+// Di halaman itu sendiri, tampilin SEMUA artikel (bukan cuma 3) - dia jadi
+// peta lengkap konten. Di artikel LAIN, otomatis muncul banner balik ke
+// pillar ini - link 2 arah kejadian otomatis tanpa perlu diedit manual
+// satu-satu tiap kali nambah artikel baru.
+const isPillar = content.pillar_slug && article.slug === content.pillar_slug;
+const pillarArticle = !isPillar && content.pillar_slug
+  ? articles.find(a => a.slug === content.pillar_slug) || null
+  : null;
+
+// Artikel terkait: prioritasin yang punya minimal 1 tag sama, baru fallback
+// ke artikel lain kalau nggak ada yang cocok tag-nya (biar section-nya
+// tetap ada isinya walau lo belum sempat isi tags di semua artikel).
+const otherArticles = articles.filter(a => a.slug !== article.slug);
+const tagMatches = otherArticles.filter(a =>
+  a.tags?.some(t => article.tags?.includes(t))
+);
+// Pillar page nampilin SEMUA artikel, artikel biasa cuma nampilin 3.
+const related = isPillar
+  ? otherArticles
+  : (tagMatches.length > 0 ? tagMatches : otherArticles).slice(0, 3);
+
+let relatedWithCover = [];
+try {
+  relatedWithCover = await Promise.all(
+    related.map(async (a) => {
+      const opt = a.cover_url
+        ? await safeImage(drivePreviewUrl(a.cover_url, 500), { width: 500, format: 'webp', quality: 70 })
+        : null;
+      return { ...a, coverSrc: opt?.src || null };
+    })
+  );
+} catch (err) {
+  // Fallback: tampilkan artikel tanpa cover
+  relatedWithCover = related.map(a => ({ ...a, coverSrc: null }));
+  console.error(`[ARTIKEL] Gagal load cover artikel terkait: ${err.message}`);
+}
+
+// Unit terkait - dikontrol manual lewat kolom related_units di sheet Articles,
+// bukan ditebak sistem. Ini yang jadi "jalan" dari artikel ke listing.
+const relatedUnitsList = units.filter(u => article.related_units?.includes(String(u.kode_unit).toLowerCase()));
+
+let relatedUnitsWithCover = [];
+try {
+  relatedUnitsWithCover = await Promise.all(
+    relatedUnitsList.map(async (unit) => {
+      const cover = findCoverImage(gallery, 'unit', unit.kode_unit);
+      const opt = cover
+        ? await safeImage(drivePreviewUrl(cover.thumbnail_url || cover.image_url, 800), { width: 400, format: 'webp', quality: 70 })
+        : null;
+      return { ...unit, coverSrc: opt?.src || null };
+    })
+  );
+} catch (err) {
+  relatedUnitsWithCover = relatedUnitsList.map(u => ({ ...u, coverSrc: null }));
+  console.error(`[ARTIKEL] Gagal load cover unit terkait: ${err.message}`);
+}
+
+const { html: contentHtml, toc } = extractToc(stripLeadingH1(article.body_html));
+
+const canonicalUrl = new URL(withBase(`artikel/${article.slug}/`), Astro.site).toString();
+
+// Structured data - bantu Google nampilin rich snippet (tanggal, judul,
+// gambar) langsung di hasil pencarian.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: article.title,
+  datePublished: article.published_at,
+  image: article.cover_url ? [coverSrc] : undefined,
+  publisher: {
+    '@type': 'Organization',
+    name: content.company_name || 'Arciv Property'
+  },
+  mainEntityOfPage: canonicalUrl
+};
+
+const articleFaq = article.faq || [];
+
+const faqJsonLd = articleFaq.length > 0 ? {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: articleFaq.map(item => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.answer
+    }
+  }))
+} : null;
+---
+
+<BaseLayout
+  title={article.meta_title || `${article.title} - ${content.company_name || 'Arciv Property'}`}
+  description={article.meta_description || article.title}
+  ogImage={coverSrc}
+  companyName={content.company_name}
+  companyPhone={content.footer_phone}
+  waNumber={content.whatsapp_number}
+>
+  <Navbar content={content} />
+  <ReadingProgress />
+
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  {faqJsonLd && <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />}
+
+  <article class="article-page">
+    <div class="container">
+      <Breadcrumb items={[
+        { label: 'Home', href: withBase('') },
+        { label: 'Artikel', href: withBase('artikel/') },
+        { label: article.title }
+      ]} />
+
+      <PillarBanner pillarArticle={pillarArticle} />
+
+      <header class="article-header">
+        <time datetime={article.published_at}>{formatDate(article.published_at)}</time>
+        <h1>{article.title}</h1>
+      </header>
+
+      {coverSrc && (
+        <div class="article-cover">
+          <img src={coverSrc} alt={article.title} />
+        </div>
+      )}
+
+      <ArticleToc toc={toc} />
+
+      <div class="article-content" set:html={contentHtml} />
+
+      <FaqBlock faq={articleFaq} />
+
+      <RelatedUnits units={relatedUnitsWithCover} waNumber={content.whatsapp_number} />
+    </div>
+  </article>
+
+  {relatedWithCover.length > 0 && (
+    <section class="related-section">
+      <div class="container">
+        <h2>{isPillar ? 'Semua Artikel & Panduan' : 'Artikel Lainnya'}</h2>
+        <div class="related-grid">
+          {relatedWithCover.map((a) => (
+            <ArticleCard article={a} coverSrc={a.coverSrc} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <Footer content={content} />
+</BaseLayout>
+
+<style>
+  .article-page {
+    padding-block: calc(var(--space-xl) + 60px) var(--space-lg);
+  }
+  .container {
+    max-width: 760px;
+  }
+  .article-header time {
+    color: var(--color-gold);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .article-header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    margin-top: 8px;
+    margin-bottom: var(--space-md);
+  }
+  .article-cover {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--space-lg);
+    box-shadow: var(--shadow-card);
+    /* Gradient halus - fallback rapi kalau foto gagal dimuat browser */
+    background: linear-gradient(160deg, color-mix(in srgb, var(--color-primary) 6%, white), var(--color-bg-paper));
+  }
+  .article-cover img {
+    width: 100%;
+    display: block;
+  }
+  .article-content {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--color-navy);
+  }
+  .article-content :global(h2) {
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-xs);
+    font-size: 1.4rem;
+  }
+  .article-content :global(p) {
+    margin-bottom: var(--space-sm);
+  }
+  .article-content :global(img) {
+    border-radius: var(--radius-md);
+    margin-block: var(--space-sm);
+  }
+  .article-content :global(a) {
+    color: var(--color-gold);
+  }
+
+  .related-section {
+    background: var(--color-paper);
+    padding-block: var(--space-xl);
+  }
+  .related-section h2 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: var(--space-lg);
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-md);
+  }
+</style>

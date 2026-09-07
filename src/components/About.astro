@@ -1,0 +1,131 @@
+---
+import { Image } from 'astro:assets';
+import { drivePreviewUrl } from '../lib/image.js';
+
+const { content, gallery } = Astro.props;
+const imageTentang = gallery.find(item => item.kategori === 'tentang' && item.thumbnail_url);
+---
+
+<section id="tentang" class="tentang-section">
+  <div class="container">
+      <div class="banner" data-reveal>
+      {imageTentang ? (
+        <Image
+          src={drivePreviewUrl(imageTentang.thumbnail_url, 1400)}
+          alt="Tentang PKP2 Extension"
+          width={1400}
+          height={900}
+          widths={[480, 900, 1400]}
+          sizes="100vw"
+          format="webp"
+          quality={75}
+          loading="lazy"
+          class="banner-img"
+        />
+      ) : (
+        <div class="banner-fallback">Gambar Tentang belum tersedia</div>
+      )}
+
+      <div class="banner-overlay"></div>
+
+      <div class="banner-content">
+        <span class="badge">Sejak pertengahan 2010-an</span>
+        <h2>Perjalanan Puri Kencana Permai</h2>
+        <p>{content.about_description}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .tentang-section {
+    padding-block: var(--space-xl);
+    background: var(--color-bg-main);
+  }
+  .banner {
+    position: relative;
+    width: 100%;
+    min-height: 500px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    align-items: center;
+  }
+  .banner :global(.banner-img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .banner-fallback {
+    position: absolute;
+    inset: 0;
+    background: var(--color-bg-paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-navy-soft); /* Mengambil warna primary yang sudah dilembutkan dari Zone B */
+  }
+  .banner-overlay {
+    position: absolute;
+    inset: 0;
+    /* Gradient otomatis menyesuaikan dengan warna Primary di Zone A */
+    background: linear-gradient(
+      to right, 
+      color-mix(in srgb, var(--color-primary) 95%, transparent), 
+      color-mix(in srgb, var(--color-primary) 75%, transparent) 45%, 
+      color-mix(in srgb, var(--color-primary) 15%, transparent)
+    );
+  }
+  .banner-content {
+    position: relative;
+    z-index: 1;
+    padding: var(--space-lg) var(--space-md);
+    max-width: 640px;
+  }
+  .badge {
+    display: inline-block;
+    background: var(--color-secondary);
+    color: var(--color-bg-main);
+    padding: 6px 16px;
+    border-radius: 999px; /* 999px adalah standar untuk bentuk pill/kapsul, dibiarkan saja */
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-sm);
+  }
+  .banner-content h2 {
+    color: var(--color-bg-main);
+    font-size: clamp(1.8rem, 4vw, 2.75rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: var(--space-sm);
+  }
+  .banner-content p {
+    color: color-mix(in srgb, var(--color-bg-main) 90%, transparent);
+    line-height: 1.7;
+    font-size: 0.95rem;
+    white-space: pre-wrap;
+  }
+
+  @media (max-width: 767px) {
+    .banner {
+      min-height: 560px;
+    }
+    .banner-content {
+      padding: var(--space-md) var(--space-sm);
+      max-width: 100%;
+    }
+    .banner-overlay {
+      background: linear-gradient(
+        to top, 
+        color-mix(in srgb, var(--color-primary) 95%, transparent), 
+        color-mix(in srgb, var(--color-primary) 60%, transparent) 55%, 
+        color-mix(in srgb, var(--color-primary) 15%, transparent)
+      );
+    }
+  }
+</style>

@@ -1,0 +1,60 @@
+---
+const { faq } = Astro.props; // [{ question, answer }]
+---
+
+{faq.length > 0 && (
+  <section class="faq-block">
+    <h2>Pertanyaan Umum</h2>
+    <div class="faq-list">
+      {faq.map((item) => (
+        <details class="faq-item">
+          <summary>{item.question}</summary>
+          <p>{item.answer}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .faq-block {
+    margin-block: var(--space-lg);
+  }
+  .faq-block h2 {
+    font-size: 1.3rem;
+    margin-bottom: var(--space-md);
+  }
+  .faq-list {
+    display: grid;
+    gap: 10px;
+  }
+  .faq-item {
+    background: var(--color-paper);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+  }
+  .faq-item summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-navy);
+    list-style: none;
+  }
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-item summary::after {
+    content: '+';
+    float: right;
+    color: var(--color-gold);
+    font-weight: 700;
+  }
+  .faq-item[open] summary::after {
+    content: '−';
+  }
+  .faq-item p {
+    margin-top: 10px;
+    color: var(--color-navy-soft);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+</style>

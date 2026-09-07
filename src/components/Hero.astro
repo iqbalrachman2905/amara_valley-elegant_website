@@ -1,0 +1,336 @@
+---
+import { formatRupiah, buildWaLink } from '../lib/format.js';
+
+const { content, heroImageResult, availableUnits, totalUnits } = Astro.props;
+
+const waMessage = `Halo, saya tertarik dengan ${content.hero_title || 'properti ini'}. Boleh info lebih lanjut?`;
+const waLink = buildWaLink(content.whatsapp_number, waMessage);
+
+// Parse angka dari nilai stat di sheet (mis. "19 Exclusive" -> 19 + "Exclusive")
+function parseStatNum(raw) {
+  if (raw === null || raw === undefined || raw === '') return null;
+  const m = String(raw).trim().match(/^(\d+)\s*(.*)$/);
+  if (!m) return null;
+  return { num: Number(m[1]), suffix: m[2].trim() };
+}
+const unitStat = parseStatNum(content.total_unit);
+const lantaiStat = parseStatNum(content.jumlah_lantai);
+const lrtStat = parseStatNum(content.jarak_lrt);
+const tolStat = parseStatNum(content.jarak_tol);
+---
+
+<section class="hero">
+  {heroImageResult && (
+    <img
+      src={heroImageResult.src}
+      alt={content.hero_title || 'Foto cluster'}
+      width={heroImageResult.attributes?.width}
+      height={heroImageResult.attributes?.height}
+      loading="eager"
+      fetchpriority="high"
+      class="hero-bg"
+    />
+  )}
+  <div class="hero-overlay" aria-hidden="true"></div>
+  <div class="hero-glow" aria-hidden="true"></div>
+
+  <div class="container hero-content">
+    {content.badge_text && (
+      <span class="hero-badge glass--hero hero-in" style="--hero-delay: 0s">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 5.4L20 8.3l-4 4.1.9 5.8L12 15.4l-4.9 2.8.9-5.8-4-4.1 5.6-.9L12 2z"/></svg>
+        {content.badge_text}
+      </span>
+    )}
+
+    {availableUnits !== undefined && availableUnits !== null && (
+      <div class="scarcity-badge glass--hero hero-in" style="--hero-delay: 80ms">
+        <svg class="scarcity-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        Tersisa <strong>{availableUnits}</strong> dari {totalUnits} unit!
+      </div>
+    )}
+
+    <h1 class="hero-title hero-in" style="--hero-delay: 160ms">{content.hero_title}</h1>
+    {content.hero_subtitle && <p class="hero-subtitle hero-in" style="--hero-delay: 240ms">{content.hero_subtitle}</p>}
+
+    <div class="hero-price-card glass--hero hero-in" style="--hero-delay: 320ms">
+      <span class="hero-price-label">Harga mulai</span>
+      <span class="hero-price" data-countup={content.price_from} data-countup-format="rupiah">{formatRupiah(content.price_from)}</span>
+      <div class="hero-promo">
+        {content.promo_dp && <span class="promo-chip">{content.promo_dp}</span>}
+        {content.promo_booking && <span class="promo-chip">{content.promo_booking}</span>}
+      </div>
+    </div>
+
+    {(unitStat || lantaiStat || lrtStat || tolStat) && (
+      <div class="hero-stats glass--hero hero-in" style="--hero-delay: 400ms">
+        {unitStat && (
+          <div class="stat">
+            <strong><span data-countup={unitStat.num}>{unitStat.num}</span>{unitStat.suffix ? ` ${unitStat.suffix}` : ''}</strong>
+            <span>Unit</span>
+          </div>
+        )}
+        {lantaiStat && <div class="stat"><strong><span data-countup={lantaiStat.num}>{lantaiStat.num}</span></strong><span>Lantai</span></div>}
+        {lrtStat && <div class="stat"><strong><span data-countup={lrtStat.num}>{lrtStat.num}</span></strong><span>{lrtStat.suffix || 'LRT'}</span></div>}
+        {tolStat && <div class="stat"><strong><span data-countup={tolStat.num}>{tolStat.num}</span></strong><span>{tolStat.suffix || 'Menit'}</span></div>}
+      </div>
+    )}
+
+    <div class="hero-ctas hero-in" style="--hero-delay: 480ms">
+      <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-gold hero-btn-wa">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.464 3.482 1.345 4.997L2 22l5.117-1.334a9.965 9.965 0 0 0 4.887 1.28h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.928-7.07a9.935 9.935 0 0 0-7.073-2.876zm0 18.184a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.037.792.81-2.96-.194-.304a8.147 8.147 0 0 1-1.247-4.348c0-4.507 3.667-8.174 8.176-8.174 2.183 0 4.235.852 5.78 2.398a8.12 8.12 0 0 1 2.394 5.783c0 4.508-3.667 8.13-8.217 8.13zm4.468-6.12c-.248-.124-1.4-.69-1.616-.768-.217-.078-.375-.116-.533.116-.157.233-.61.769-.747.927-.137.158-.275.178-.51.059-.234-.12-.99-.365-1.885-1.164-.698-.622-1.168-1.388-1.304-1.62-.137-.233-.015-.36.102-.477.105-.105.275-.273.412-.411.137-.137.183-.233.275-.389.091-.156.045-.291-.02-.408-.065-.116-.583-1.404-.799-1.922-.21-.505-.424-.437-.583-.445l-.497-.01c-.172 0-.45.064-.685.32-.234.256-.895.874-.895 2.132 0 1.257.915 2.472 1.042 2.649.128.176 1.797 2.746 4.356 3.852.608.263 1.084.42 1.454.538.626.199 1.195.171 1.645.104.508-.076 1.4-.573 1.6-1.126.198-.553.198-1.026.138-1.126-.06-.1-.217-.16-.451-.279z"/></svg>
+        Booking via WhatsApp
+      </a>
+      <a href="#unit" class="btn btn-ghost-light hero-btn-secondary">
+        Lihat Pilihan Unit
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14m0 0l-6-6m6 6l6-6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <a href="#tentang" class="hero-scroll" aria-label="Scroll ke bawah">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+  </a>
+</section>
+
+<script>
+  // Count-up angka (harga & stats). Nilai final udah dirender server-side,
+  // jadi tanpa-JS / reduced-motion isi tetap benar - ini murni kosmetik.
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const els = document.querySelectorAll('.hero [data-countup]');
+  if (!reduced && els.length > 0) {
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+    els.forEach((el) => {
+      const target = Number(el.getAttribute('data-countup'));
+      if (!isFinite(target) || target <= 0) return;
+      const asRupiah = el.getAttribute('data-countup-format') === 'rupiah';
+      const dur = 1400;
+      const t0 = performance.now() + 500; // kasih jeda entrance animasi selesai duluan
+      const fmt = (v) => (asRupiah ? 'Rp ' : '') + v.toLocaleString('id-ID');
+      const step = (now) => {
+        if (now < t0) { requestAnimationFrame(step); return; }
+        const p = Math.min((now - t0) / dur, 1);
+        el.textContent = fmt(Math.round(target * easeOutCubic(p)));
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background: var(--color-primary);
+  }
+  .hero-bg,
+  .hero-overlay,
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .hero-bg {
+    object-fit: cover;
+    animation: hero-zoom 22s ease-in-out infinite alternate;
+  }
+  @keyframes hero-zoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.09); }
+  }
+  .hero-overlay {
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--color-primary) 92%, transparent) 0%,
+      color-mix(in srgb, var(--color-primary) 55%, transparent) 45%,
+      color-mix(in srgb, var(--color-primary) 15%, transparent) 100%
+    );
+  }
+  /* Warm glow emas halus di area konten - kasih kesan premium */
+  .hero-glow {
+    background:
+      radial-gradient(52% 42% at 18% 88%, color-mix(in srgb, var(--color-secondary) 14%, transparent), transparent 70%),
+      radial-gradient(40% 30% at 85% 20%, color-mix(in srgb, var(--color-secondary) 7%, transparent), transparent 70%);
+  }
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    color: var(--color-bg-main);
+    padding-block: var(--space-xl) var(--space-lg);
+  }
+
+  /* Entrance animation berurutan (stagger) */
+  .hero-in {
+    animation: hero-in 0.9s var(--ease-out) both;
+    animation-delay: calc(var(--hero-delay, 0s) + 0.15s);
+  }
+  @keyframes hero-in {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--glass-bg-hero);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border-hero);
+    color: var(--color-bg-main);
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: var(--space-sm);
+  }
+  .hero-badge svg { color: var(--color-secondary); }
+  .scarcity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(184, 147, 95, 0.35);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid rgba(184, 147, 95, 0.3);
+    color: var(--color-bg-main);
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 8px 18px;
+    border-radius: 999px;
+    margin-bottom: var(--space-sm);
+    animation: pulse-scarcity 2s ease-in-out infinite, hero-in 0.9s var(--ease-out) both;
+    animation-delay: 0s, 0.15s;
+  }
+  .scarcity-icon {
+    flex-shrink: 0;
+  }
+  @keyframes pulse-scarcity {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-secondary) 40%, transparent); }
+    50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-secondary) 0%, transparent); }
+  }
+  .hero-title {
+    font-size: var(--text-h1);
+    margin-bottom: var(--space-xs);
+    max-width: 20ch;
+  }
+  .hero-subtitle {
+    font-size: 1.15rem;
+    color: color-mix(in srgb, var(--color-bg-main) 85%, transparent);
+    margin-bottom: var(--space-md);
+  }
+  .hero-price-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    color: var(--color-primary);
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    box-shadow: var(--glass-shadow);
+    margin-bottom: var(--space-md);
+  }
+  .hero-price-label {
+    font-size: 0.8rem;
+    color: var(--color-navy-soft);
+  }
+  .hero-price {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-promo {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .promo-chip {
+    background: var(--color-gold-soft);
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+    color: color-mix(in srgb, var(--color-bg-main) 85%, transparent);
+    padding-right: var(--space-md);
+    border-right: 1px solid var(--glass-border-hero);
+  }
+  .stat:last-child {
+    border-right: none;
+    padding-right: 0;
+  }
+  .stat strong {
+    font-size: 1.1rem;
+    color: var(--color-bg-main);
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+  .hero-btn-wa {
+    padding: 15px 30px;
+    font-size: 1rem;
+  }
+  .hero-btn-secondary {
+    padding: 15px 26px;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  /* Indikator scroll - bouncing chevron dalam chip kaca */
+  .hero-scroll {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 16px;
+    z-index: 1;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--glass-bg-hero);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border-hero);
+    color: var(--color-bg-main);
+    transition: background var(--duration-normal) var(--ease-out);
+    animation: hero-bounce 2.2s ease-in-out infinite;
+  }
+  .hero-scroll:hover { background: color-mix(in srgb, var(--color-bg-main) 22%, transparent); }
+  @keyframes hero-bounce {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, 7px); }
+  }
+
+  @media (max-width: 640px), (max-height: 680px) {
+    .hero-scroll { display: none; }
+  }
+</style>

@@ -1,0 +1,266 @@
+/* ========================================================================= */
+/* 🟢 ZONE A — TEMA PROYEK (AI BOLEH UBAH NILAI DI SINI)                     */
+/* Instruksi buat AI: HANYA ubah value (warna hex, nama font). JANGAN ubah   */
+/* nama variabel (--nama-var), jangan tambah/hapus baris.                    */
+/* ========================================================================= */
+:root {
+  /* 1. WARNA BRAND (1 sumber kebenaran) */
+  --color-primary: #102A43;       /* Contrast ratio: 14.9:1 */
+  --color-secondary: #DDAE6F;     /* Gold solid untuk highlight & tombol */
+  
+  /* 2. BACKGROUND */
+  --color-bg-main: #FFFFFF;       /* background dasar website */
+  --color-bg-paper: #F2F5F8;      /* background section alternatif/kartu */
+  
+  /* 3. TIPOGRAFI (Cocokkan dengan @fontsource imports di BaseLayout) */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  
+  /* 3b. TIPOGRAFI SKALA (Heading & text sizes) */
+  --text-h1: clamp(2.2rem, 6vw, 4rem);
+  --text-h2: clamp(1.6rem, 4vw, 2.5rem);
+  --text-h3: clamp(1.2rem, 3vw, 1.75rem);
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-xs: 0.75rem;
+  --leading-tight: 1.2;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.8;
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.08em;
+
+  /* 4. BENTUK (Radius corner) */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* 5. KETEBALAN & INTENSITAS */
+  --border-width: 1px;
+  --shadow-intensity-soft: 10%;    /* dipakai shadow gede (modal, floating bar) */
+  --shadow-intensity-card: 5%;    /* dipakai shadow kecil (card, item) */
+
+  /* 7. ANIMASI & TRANSISI */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  /* 6. GLASSMORPHISM (Efek kaca premium) */
+  --glass-blur: 16px;
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-hero: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-border-hero: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+/* ================= END OF ZONE A ========================================= */
+
+
+/* ========================================================================= */
+/* 🔴 ZONE B — CORE ENGINE (JANGAN DIUBAH AI!)                               */
+/* Status badge, shadow, spacing, reset, dan ALIAS untuk komponen lama       */
+/* ========================================================================= */
+:root {
+  /* --- ALIAS KOMPONEN LAMA (Biar gak break / undefined) --- */
+  --color-navy: var(--color-primary);
+  --color-gold: var(--color-secondary);
+  --color-white: var(--color-bg-main);
+  --color-paper: var(--color-bg-paper);
+  
+  /* --- WARNA TURUNAN OTOMATIS DENGAN COLOR-MIX --- */
+  --color-navy-soft: color-mix(in srgb, var(--color-primary) 70%, white);
+  --color-gold-soft: color-mix(in srgb, var(--color-secondary) 25%, white);
+  --color-border: color-mix(in srgb, var(--color-primary) 12%, white);
+  
+  /* --- STATUS BADGE (Universal) --- */
+  --color-status-available: #2F7A4D;
+  --color-status-sold: #8A8F98;
+  --color-status-ready: #1B6FA8;
+  --color-status-progress: #B8935F;
+  
+  /* --- SHADOW SKALA --- */
+  --shadow-xs: 0 1px 2px color-mix(in srgb, var(--color-primary) 5%, transparent);
+  --shadow-sm: 0 2px 8px color-mix(in srgb, var(--color-primary) 8%, transparent);
+  --shadow-md: 0 4px 16px color-mix(in srgb, var(--color-primary) var(--shadow-intensity-card), transparent);
+  --shadow-lg: 0 8px 32px color-mix(in srgb, var(--color-primary) var(--shadow-intensity-soft), transparent);
+  --shadow-xl: 0 16px 48px color-mix(in srgb, var(--color-primary) 14%, transparent);
+  /* Aliases untuk backward compat */
+  --shadow-soft: var(--shadow-lg);
+  --shadow-card: var(--shadow-md);
+
+  /* --- SPACING SCALE --- */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 48px;
+  --space-xl: 80px;
+  --space-2xl: 120px;
+  --container-width: 1200px;
+
+  /* --- Z-INDEX SCALE --- */
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-navbar: 50;
+  --z-overlay: 80;
+  --z-modal: 100;
+  --z-toast: 150;
+
+  /* --- FOCUS RING --- */
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 40%, transparent);
+  --focus-ring-offset: 2px;
+}
+
+/* --- GLOBAL BASE STYLES --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  color: var(--color-primary);
+  background: var(--color-bg-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  line-height: var(--leading-tight);
+  font-weight: 600;
+  text-wrap: balance;
+}
+h1 { font-size: var(--text-h1); }
+h2 { font-size: var(--text-h2); }
+h3 { font-size: var(--text-h3); }
+.prose p {
+  text-wrap: pretty;
+}
+img { max-width: 100%; display: block; }
+.container {
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding-inline: var(--space-sm);
+}
+
+/* --- AKSESIBILITAS & ANIMASI --- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring);
+}
+
+/* --- POLISH KECL --- */
+/* Section target anchor gak ketutupan navbar fixed */
+section[id] { scroll-margin-top: 72px; }
+/* Warna teks ter-select ikut brand */
+::selection { background: color-mix(in srgb, var(--color-secondary) 45%, transparent); color: var(--color-primary); }
+
+/* --- SCROLL REVEAL ------------------------------------------------------ */
+/* Elemen ber-atribut data-reveal fade-up pas masuk viewport. Hidden state
+   cuma aktif kalau JS jalan (html.js-reveal) supaya tanpa-JS konten tetap
+   keliatan. Stagger via style="--reveal-delay: .1s". */
+html.js-reveal [data-reveal] {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.7s var(--ease-out) var(--reveal-delay, 0s),
+    transform 0.7s var(--ease-out) var(--reveal-delay, 0s);
+  will-change: opacity, transform;
+}
+html.js-reveal [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* --- TOMBOL PREMIUM (global utility) ----------------------------------- */
+/* Pill dengan gradient gold + sheen sweep pas hover. Dipakai lewat
+   class="btn btn-gold" dsb; komponen tinggal nambah ukuran sendiri. */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  border-radius: var(--radius-full);
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    box-shadow var(--duration-normal) var(--ease-out),
+    filter var(--duration-normal) var(--ease-out);
+}
+.btn::after {
+  /* Sheen sweep */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.45) 50%, transparent 60%);
+  transform: translateX(-120%);
+  transition: transform 0.7s var(--ease-out);
+  pointer-events: none;
+}
+.btn:hover::after { transform: translateX(120%); }
+.btn:active { transform: translateY(0) scale(0.98); }
+
+.btn-gold {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-secondary) 72%, white) 0%, var(--color-secondary) 45%, color-mix(in srgb, var(--color-secondary) 82%, black) 100%);
+  color: var(--color-primary);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-secondary) 35%, transparent);
+}
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--color-secondary) 48%, transparent);
+}
+
+.btn-ghost-light {
+  background: var(--glass-bg-hero);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border-hero);
+  color: var(--color-bg-main);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+.btn-ghost-light:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--color-bg-main) 20%, transparent);
+}
+
+.btn-outline-dark {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+.btn-outline-dark:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-secondary);
+  color: var(--color-primary);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-secondary) 25%, transparent);
+}
+
+/* --- GLASSMORPHISM UTILITY CLASS --- */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+.glass--hero {
+  background: var(--glass-bg-hero);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border-hero);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+/* ================= END OF ZONE B ========================================= */

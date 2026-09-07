@@ -1,0 +1,67 @@
+---
+const { items } = Astro.props; // [{ id, caption, src }]
+---
+
+{items.length > 0 && (
+  <section id="progress" class="progress-section">
+    <div class="container">
+      <div class="section-heading">
+        <span class="eyebrow">Progress Pembangunan</span>
+        <h2>Pembangunan Terus Berjalan</h2>
+      </div>
+
+      <div class="progress-grid">
+        {items.map((item, i) => (
+          <figure class="progress-card" data-reveal style={`--reveal-delay: ${i * 100}ms`}>
+            <img src={item.src} alt={item.caption || 'Progress pembangunan'} loading="lazy" />
+            {item.caption && <figcaption>{item.caption}</figcaption>}
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .progress-section {
+    padding-block: var(--space-xl);
+  }
+  .section-heading {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+  }
+  .eyebrow {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-gold);
+    margin-bottom: 6px;
+  }
+  .section-heading h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+  }
+  .progress-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-md);
+  }
+  .progress-card {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .progress-card img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    display: block;
+  }
+  .progress-card figcaption {
+    padding: var(--space-sm);
+    font-size: 0.9rem;
+    color: var(--color-navy-soft);
+  }
+</style>

@@ -1,0 +1,46 @@
+---
+const { toc } = Astro.props; // [{ id, text }]
+---
+
+{toc.length > 1 && (
+  <nav class="article-toc" aria-label="Daftar isi artikel">
+    <span class="toc-label">Daftar Isi</span>
+    <ol>
+      {toc.map((item) => (
+        <li><a href={`#${item.id}`}>{item.text}</a></li>
+      ))}
+    </ol>
+  </nav>
+)}
+
+<style>
+  .article-toc {
+    background: var(--color-paper);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+    margin-bottom: var(--space-lg);
+  }
+  .toc-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-gold);
+    margin-bottom: 8px;
+  }
+  .article-toc ol {
+    list-style: decimal;
+    padding-left: 1.2em;
+    display: grid;
+    gap: 4px;
+  }
+  .article-toc a {
+    color: var(--color-navy);
+    text-decoration: none;
+    font-size: 0.92rem;
+  }
+  .article-toc a:hover {
+    text-decoration: underline;
+  }
+</style>

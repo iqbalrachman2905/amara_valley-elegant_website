@@ -1,0 +1,95 @@
+---
+import { formatRupiah, statusStyle, buildWaLink } from '../lib/format.js';
+
+const { units, waNumber } = Astro.props; // units: [{ ...unit, coverSrc }]
+---
+
+{units.length > 0 && (
+  <section class="related-units">
+    <h2>Unit yang Mungkin Cocok</h2>
+    <div class="related-units-grid">
+      {units.map((unit) => {
+        const badge = statusStyle(unit.status);
+        const waLink = buildWaLink(waNumber, `Halo, saya tertarik dengan Tipe ${unit.tipe}, boleh info lebih lanjut?`);
+        return (
+          <div class="unit-mini">
+            {unit.coverSrc ? (
+              <img src={unit.coverSrc} alt={`Tipe ${unit.tipe}`} loading="lazy" />
+            ) : (
+              <div class="unit-mini-placeholder"></div>
+            )}
+            <div class="unit-mini-body">
+              <span class="unit-mini-status" style={`--status-color:${badge.color}`}>{badge.label}</span>
+              <h3>Tipe {unit.tipe}</h3>
+              <span class="unit-mini-price">{formatRupiah(unit.harga)}</span>
+              <a href={waLink} target="_blank" rel="noopener noreferrer" class="unit-mini-cta">Tanya Unit Ini</a>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </section>
+)}
+
+<style>
+  .related-units {
+    margin-block: var(--space-lg);
+  }
+  .related-units h2 {
+    font-size: 1.3rem;
+    margin-bottom: var(--space-md);
+  }
+  .related-units-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-sm);
+  }
+  .unit-mini {
+    background: var(--color-paper);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .unit-mini img,
+  .unit-mini-placeholder {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+    background: linear-gradient(160deg, color-mix(in srgb, var(--color-primary) 6%, white), var(--color-bg-paper));
+  }
+  .unit-mini-body {
+    padding: var(--space-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .unit-mini-status {
+    align-self: flex-start;
+    background: var(--status-color);
+    color: var(--color-white);
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .unit-mini-body h3 {
+    font-size: 1.05rem;
+  }
+  .unit-mini-price {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--color-navy);
+  }
+  .unit-mini-cta {
+    margin-top: 4px;
+    display: inline-block;
+    background: var(--color-navy);
+    color: var(--color-white);
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 8px;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+  }
+</style>

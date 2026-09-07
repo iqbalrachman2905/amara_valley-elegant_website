@@ -1,0 +1,95 @@
+<!-- Tombol back-to-top.
+     Dipasang di BaseLayout (bukan per-halaman) jadi muncul di semua halaman:
+     homepage, listing artikel, dan detail artikel.
+     Posisi kiri-bawah biar gak tabrakan sama tombol WhatsApp sticky (kanan-bawah). -->
+<button class="back-to-top" data-back-to-top aria-label="Kembali ke atas" aria-hidden="true" tabindex="-1">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 19V5"></path>
+    <path d="m5 12 7-7 7 7"></path>
+  </svg>
+</button>
+
+<script>
+  const btn = document.querySelector('[data-back-to-top]');
+
+  if (btn) {
+    let ticking = false;
+
+    // Pakai class (bukan atribut hidden) supaya bisa dianimasikan halus.
+    // aria-hidden + tabindex=-1 mastiin screen reader & keyboard gak
+    // menganggap tombol yang belum muncul.
+    function updateVisibility() {
+      const show = window.scrollY > 600;
+      btn.classList.toggle('is-visible', show);
+      btn.setAttribute('aria-hidden', String(!show));
+      btn.tabIndex = show ? 0 : -1;
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateVisibility);
+      }
+    }, { passive: true });
+
+    // Jalankan sekali saat load - halaman panjang yang dibuka di tengah
+    // (mis. dari link #section atau restore scroll) langsung dapat tombolnya.
+    updateVisibility();
+
+    btn.addEventListener('click', () => {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+  }
+</script>
+
+<style>
+  .back-to-top {
+    position: fixed;
+    bottom: var(--space-md);
+    left: var(--space-md);
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--color-navy);
+    color: var(--color-white);
+    border: none;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    z-index: calc(var(--z-toast) - 10);
+    /* Muncul/hilang halus - default tersembunyi & gak bisa diklik */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(14px);
+    pointer-events: none;
+    transition:
+      opacity var(--duration-normal) var(--ease-out),
+      transform var(--duration-normal) var(--ease-spring),
+      background var(--duration-fast) var(--ease-out),
+      visibility var(--duration-normal);
+  }
+  .back-to-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+  }
+  .back-to-top:hover {
+    background: var(--color-secondary);
+    color: var(--color-navy);
+  }
+  .back-to-top:active {
+    transform: translateY(1px) scale(0.96);
+  }
+
+  /* Di mobile: angkat sedikit ke atas biar gak nimpa elemen fixed lain
+     dan tetap nyaman dijangkau jempol. */
+  @media (max-width: 640px) {
+    .back-to-top {
+      bottom: calc(var(--space-md) + 4px);
+    }
+  }
+</style>

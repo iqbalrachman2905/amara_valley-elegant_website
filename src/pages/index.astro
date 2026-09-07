@@ -1,0 +1,238 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import About from '../components/About.astro';
+import PromoSection from '../components/PromoSection.astro'; // Dipakai sebagai Banner
+import Trusted from '../components/Trusted.astro';
+import Facilities from '../components/Facilities.astro';
+import GalleryLightbox from '../components/GalleryLightbox.vue';
+import SiteplanSection from '../components/SiteplanSection.astro';
+import UnitFilterGrid from '../components/UnitFilterGrid.vue';
+import Spesifikasi from '../components/Spesifikasi.astro';
+import MapsSection from '../components/MapsSection.astro';
+import VideoSection from '../components/VideoSection.astro';
+import ProgressSection from '../components/ProgressSection.astro';
+import KprCalculator from '../components/KprCalculator.vue';
+import FaqHomepage from '../components/FaqHomepage.astro';
+import Testimonial from '../components/Testimonial.astro';
+import ArticlePreview from '../components/ArticlePreview.astro';
+import Footer from '../components/Footer.astro';
+
+import { getSiteData, findCoverImage } from '../lib/api.js';
+import { safeImage, drivePreviewUrl } from '../lib/image.js';
+import { extractYoutubeId } from '../lib/format.js';
+
+// Mengambil data dari endpoint Apps Script
+const { content, units, gallery, articles, testimonials } = await getSiteData();
+
+// Mengolah gambar Hero (pakai URL thumbnail Drive - lebih reliable & bisa
+// diambil resolusi tinggi lewat param sz)
+const heroImage = findCoverImage(gallery, 'hero', 'hero');
+const heroImageResult = heroImage
+  ? await safeImage(drivePreviewUrl(heroImage.thumbnail_url || heroImage.image_url, 1920), { width: 1920, height: 1280, format: 'webp', quality: 70 })
+  : null;
+
+// Menghitung ketersediaan unit
+const availableUnits = units.filter(u => u.status !== 'Sold').length;
+const totalUnits = content.total_unit || units.length;
+
+// Memproses cover gambar untuk setiap tipe unit
+const unitsWithCover = await Promise.all(
+  units.map(async (unit) => {
+    const cover = findCoverImage(gallery, 'unit', unit.kode_unit);
+    const optimized = cover
+      ? await safeImage(drivePreviewUrl(cover.thumbnail_url || cover.image_url, 1000), { width: 800, format: 'webp', quality: 72 })
+      : null;
+    return {
+      ...unit,
+      coverSrc: optimized?.src || null,
+      coverCaption: cover?.caption || null
+    };
+  })
+);
+
+// Memproses item galeri umum (mengecualikan gambar khusus hero, fasilitas, dan tentang)
+const galleryItemsRaw = await Promise.all(
+  gallery
+    .filter(g => !['hero', 'facility', 'tentang'].includes(g.kategori) && g.image_url)
+    .sort((a, b) => (a.urutan || 0) - (b.urutan || 0))
+    .map(async (item) => {
+      const [thumb, full] = await Promise.all([
+        safeImage(drivePreviewUrl(item.thumbnail_url || item.image_url, 500), { width: 500, format: 'webp', quality: 70 }),
+        safeImage(drivePreviewUrl(item.thumbnail_url || item.image_url, 1400), { width: 1400, format: 'webp', quality: 78 })
+      ]);
+      if (!thumb || !full) return null;
+      return {
+        id: item.id,
+        caption: item.caption,
+        thumbSrc: thumb.src,
+        fullSrc: full.src
+      };
+    })
+);
+const galleryItems = galleryItemsRaw.filter(Boolean);
+
+// Memproses foto progress (jika ada)
+const progressItemsRaw = await Promise.all(
+  gallery
+    .filter(g => g.kategori === 'progress' && g.image_url)
+    .sort((a, b) => (a.urutan || 0) - (b.urutan || 0))
+    .map(async (item) => {
+      const optimized = await safeImage(drivePreviewUrl(item.thumbnail_url || item.image_url, 1000), { width: 700, format: 'webp', quality: 72 });
+      if (!optimized) return null;
+      return {
+        id: item.id,
+        caption: item.caption,
+        src: optimized.src
+      };
+    })
+);
+const progressItems = progressItemsRaw.filter(Boolean);
+
+// Memproses cover 3 artikel terbaru
+const articlesWithCover = await Promise.all(
+  articles.slice(0, 3).map(async (a) => {
+    const optimized = a.cover_url
+      ? await safeImage(drivePreviewUrl(a.cover_url, 500), { width: 500, format: 'webp', quality: 72 })
+      : null;
+    return { ...a, coverSrc: optimized?.src || null };
+  })
+);
+
+// Mengolah gambar siteplan (prioritas thumbnail Drive)
+const siteplanResult = (content.siteplan_thumbnail || content.siteplan)
+  ? await safeImage(drivePreviewUrl(content.siteplan_thumbnail || content.siteplan, 1920), { width: 1400, format: 'webp', quality: 78 })
+  : null;
+
+// Mengolah Video ID
+const videoId = extractYoutubeId(content.video);
+---
+
+<BaseLayout
+  title={content.meta_title || content.hero_title}
+  description={content.meta_description}
+  ogImage={heroImageResult?.src}
+  companyName={content.company_name}
+  companyPhone={content.footer_phone}
+  waNumber={content.whatsapp_number}
+>
+  <!-- 0. Navbar -->
+  <Navbar content={content} />
+
+  <!-- 1. Hero -->
+  <Hero 
+    content={content} 
+    heroImageResult={heroImageResult} 
+    availableUnits={availableUnits} 
+    totalUnits={totalUnits} 
+  />
+
+  <!-- 2. About -->
+  <About content={content} gallery={gallery} />
+
+  <!-- 3. Banner (Promo Section) -->
+  <PromoSection content={content} />
+
+  <!-- 4. Trusted -->
+  <Trusted content={content} />
+
+  <!-- 5. Facility (Fasilitas) -->
+  <Facilities gallery={gallery} />
+
+  <!-- 6. Galeri Visual (Pengganti area "Tipe Unit" visual sebelum Siteplan) -->
+  <!--
+  <section id="galeri" class="gallery-section">
+    <div class="container">
+      <div class="section-heading">
+        <span class="eyebrow">Galeri</span>
+        <h2>Rasakan Suasana Tinggal di Sini</h2>
+      </div>
+      <GalleryLightbox client:visible items={galleryItems} />
+    </div>
+  </section>
+  -->
+
+  <!-- 7. Siteplan -->
+  <SiteplanSection imageResult={siteplanResult} />
+
+  <!-- 8. Pilihan Unit (Filter Tipe Unit Interaktif) -->
+  <section id="unit" class="units-section">
+    <div class="container">
+    <div class="section-heading" data-reveal>
+      <span class="eyebrow">Pilihan Unit</span>
+      <h2>Temukan Tipe yang Sesuai</h2>
+    </div>
+      <UnitFilterGrid client:visible units={unitsWithCover} waNumber={content.whatsapp_number} />
+    </div>
+  </section>
+
+  <!-- 9. Spesifikasi (Komponen Baru) -->
+  <Spesifikasi content={content} />
+
+  <!-- 10. Maps -->
+  <MapsSection content={content} />
+
+  <!-- 11. Video -->
+  <VideoSection videoId={videoId} />
+
+  <!-- Ekstra: Progress Pembangunan (Opsional untuk tetap ada) -->
+  <ProgressSection items={progressItems} />
+
+  <!-- 12. Kalkulator KPR -->
+  <section id="kpr" class="kpr-section">
+    <div class="container container-narrow">
+      <div class="section-heading" data-reveal>
+        <span class="eyebrow">Simulasi KPR</span>
+        <h2>Cek Estimasi Cicilan Bulanan</h2>
+      </div>
+      <KprCalculator client:visible defaultPrice={content.price_from || 900000000} />
+    </div>
+  </section>
+
+  <!-- 13. FAQ (Komponen Baru) -->
+  <FaqHomepage content={content} />
+
+  <!-- 14. Testimoni -->
+  <Testimonial testimonials={testimonials} content={content} />
+
+  <!-- 15. Artikel Terbaru -->
+  <ArticlePreview articles={articlesWithCover} />
+
+  <!-- 16. Footer -->
+  <Footer content={content} />
+
+</BaseLayout>
+
+<style>
+  .units-section {
+    padding-block: var(--space-xl);
+    background: var(--color-paper);
+  }
+  .gallery-section {
+    padding-block: var(--space-xl);
+  }
+  .kpr-section {
+    padding-block: var(--space-xl);
+    background: var(--color-paper);
+  }
+  .container-narrow {
+    max-width: 760px;
+  }
+  .section-heading {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+  }
+  .eyebrow {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-gold);
+    margin-bottom: 6px;
+  }
+  .section-heading h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+  }
+</style>

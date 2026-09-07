@@ -1,0 +1,276 @@
+---
+import { buildWaLink } from '../lib/format.js';
+
+const { content } = Astro.props;
+const waLink = buildWaLink(content.whatsapp_number, `Halo, saya tertarik dengan ${content.hero_title || 'properti ini'}.`);
+
+// Hanya link ke section yang beneran ada di halaman (section "galeri" lagi
+// di-nonaktifkan & "progress" kondisional - link mati itu jelek buat UX & SEO).
+const navLinks = [
+  { href: '#unit', label: 'Pilihan Unit' },
+  { href: '#siteplan', label: 'Siteplan' },
+  { href: '#fasilitas', label: 'Fasilitas' },
+  { href: '#kpr', label: 'Simulasi KPR' },
+  { href: '#artikel', label: 'Artikel' }
+];
+---
+
+<header class="navbar" data-navbar>
+  <div class="container navbar-inner">
+    <a href="#" class="brand" aria-label={`${content.company_name || 'Arciv Property'} - kembali ke atas`}>
+      <span class="brand-mark" aria-hidden="true">{(content.company_name || 'A').trim().charAt(0)}</span>
+      <span class="brand-name">{content.company_name || 'Arciv Property'}</span>
+    </a>
+
+    <nav class="nav-links" aria-label="Navigasi utama">
+      {navLinks.map(link => (
+        <a href={link.href} data-spy-link={link.href.slice(1)}>{link.label}</a>
+      ))}
+    </nav>
+
+    <div class="navbar-actions">
+      <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-gold btn-wa-sm">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.464 3.482 1.345 4.997L2 22l5.117-1.334a9.965 9.965 0 0 0 4.887 1.28h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.928-7.07a9.935 9.935 0 0 0-7.073-2.876zm0 18.184a8.16 8.16 0 0 1-4.166-1.14l-.299-.177-3.037.792.81-2.96-.194-.304a8.147 8.147 0 0 1-1.247-4.348c0-4.507 3.667-8.174 8.176-8.174 2.183 0 4.235.852 5.78 2.398a8.12 8.12 0 0 1 2.394 5.783c0 4.508-3.667 8.13-8.217 8.13zm4.468-6.12c-.248-.124-1.4-.69-1.616-.768-.217-.078-.375-.116-.533.116-.157.233-.61.769-.747.927-.137.158-.275.178-.51.059-.234-.12-.99-.365-1.885-1.164-.698-.622-1.168-1.388-1.304-1.62-.137-.233-.015-.36.102-.477.105-.105.275-.273.412-.411.137-.137.183-.233.275-.389.091-.156.045-.291-.02-.408-.065-.116-.583-1.404-.799-1.922-.21-.505-.424-.437-.583-.445l-.497-.01c-.172 0-.45.064-.685.32-.234.256-.895.874-.895 2.132 0 1.257.915 2.472 1.042 2.649.128.176 1.797 2.746 4.356 3.852.608.263 1.084.42 1.454.538.626.199 1.195.171 1.645.104.508-.076 1.4-.573 1.6-1.126.198-.553.198-1.026.138-1.126-.06-.1-.217-.16-.451-.279z"/></svg>
+        WhatsApp
+      </a>
+      <button class="nav-toggle" data-nav-toggle aria-label="Buka menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <nav class="nav-mobile" data-nav-mobile aria-label="Navigasi mobile">
+    <div class="nav-mobile-inner">
+      {navLinks.map(link => (
+        <a href={link.href} data-spy-link={link.href.slice(1)}>
+          {link.label}
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      ))}
+      <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-gold btn-wa-sm btn-wa-mobile">Chat WhatsApp</a>
+    </div>
+  </nav>
+</header>
+
+<script>
+  // Vanilla JS kecil - sengaja BUKAN Vue island, karena cuma toggle class,
+  // nambah beban framework buat ini nggak worth-it demi speed.
+  const toggle = document.querySelector('[data-nav-toggle]');
+  const mobileNav = document.querySelector('[data-nav-mobile]');
+  const navbar = document.querySelector('[data-navbar]');
+
+  toggle?.addEventListener('click', () => {
+    const isOpen = mobileNav?.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded', String(!!isOpen));
+    toggle.setAttribute('aria-label', isOpen ? 'Tutup menu' : 'Buka menu');
+  });
+
+  mobileNav?.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => mobileNav.classList.remove('is-open'));
+  });
+
+  // Navbar berubah frosted-glass pas discroll, biar kebaca di atas hero
+  // yang transparan tapi tetap modern (bukan putih solid kaku).
+  const onScroll = () => {
+    navbar?.classList.toggle('is-scrolled', window.scrollY > 40);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Scrollspy: highlight link nav sesuai section yang lagi dilihat.
+  const spyLinks = Array.from(document.querySelectorAll('[data-spy-link]'));
+  const spySections = spyLinks
+    .map(l => document.getElementById(l.getAttribute('data-spy-link')))
+    .filter(Boolean);
+
+  if ('IntersectionObserver' in window && spySections.length > 0) {
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        spyLinks.forEach(l =>
+          l.classList.toggle('is-active', l.getAttribute('data-spy-link') === entry.target.id)
+        );
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    spySections.forEach(s => spy.observe(s));
+  }
+</script>
+
+<style>
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-navbar);
+    background: transparent;
+    transition: background var(--duration-normal) var(--ease-out), box-shadow var(--duration-normal) var(--ease-out), backdrop-filter var(--duration-normal) var(--ease-out);
+  }
+  .navbar.is-scrolled {
+    background: color-mix(in srgb, var(--color-white) 82%, transparent);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--color-primary) 8%, transparent), var(--shadow-sm);
+  }
+  .navbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--space-sm);
+  }
+
+  /* Brand: monogram + wordmark */
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--color-secondary) 75%, white), var(--color-secondary));
+    color: var(--color-primary);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--color-secondary) 35%, transparent);
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--color-white);
+    transition: color var(--duration-normal) var(--ease-out);
+  }
+  .navbar.is-scrolled .brand-name { color: var(--color-navy); }
+
+  .nav-links {
+    display: none;
+    gap: var(--space-sm);
+  }
+  .nav-links a {
+    position: relative;
+    color: var(--color-white);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 6px 2px;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  .navbar.is-scrolled .nav-links a { color: var(--color-navy); }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-secondary);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-normal) var(--ease-out);
+  }
+  .nav-links a:hover::after,
+  .nav-links a.is-active::after { transform: scaleX(1); }
+  .nav-links a.is-active { font-weight: 600; }
+
+  .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .btn-wa-sm {
+    display: none;
+    font-size: 0.85rem;
+    padding: 9px 18px;
+  }
+
+  /* Hamburger */
+  .nav-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    margin-right: -10px;
+  }
+  .nav-toggle span {
+    width: 22px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-white);
+    transition: transform var(--duration-normal) var(--ease-out), opacity var(--duration-fast) var(--ease-out), background var(--duration-normal) var(--ease-out);
+  }
+  .navbar.is-scrolled .nav-toggle span { background: var(--color-navy); }
+  /* Jadiin X pas kebuka */
+  .nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  .nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Menu mobile: slide-down + fade (bukan display toggle kaku) */
+  .nav-mobile {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: color-mix(in srgb, var(--color-white) 92%, transparent);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: var(--shadow-lg);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--duration-slow) var(--ease-out);
+  }
+  .nav-mobile.is-open { max-height: 420px; }
+  .nav-mobile-inner {
+    padding: var(--space-xs) var(--space-md) var(--space-md);
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-mobile a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 4px;
+    color: var(--color-navy);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid var(--color-border);
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity var(--duration-normal) var(--ease-out), transform var(--duration-normal) var(--ease-out), color var(--duration-fast) var(--ease-out);
+  }
+  .nav-mobile a svg { color: var(--color-gold); }
+  .nav-mobile.is-open a {
+    opacity: 1;
+    transform: none;
+  }
+  /* Stagger tiap item */
+  .nav-mobile.is-open a:nth-child(1) { transition-delay: 40ms; }
+  .nav-mobile.is-open a:nth-child(2) { transition-delay: 80ms; }
+  .nav-mobile.is-open a:nth-child(3) { transition-delay: 120ms; }
+  .nav-mobile.is-open a:nth-child(4) { transition-delay: 160ms; }
+  .nav-mobile.is-open a:nth-child(5) { transition-delay: 200ms; }
+  .nav-mobile.is-open a:nth-child(6) { transition-delay: 240ms; }
+  .nav-mobile a.is-active { color: var(--color-gold); font-weight: 700; }
+  .nav-mobile .btn-wa-mobile {
+    display: flex;
+    margin-top: var(--space-sm);
+    padding: 12px;
+  }
+
+  @media (min-width: 860px) {
+    .nav-links { display: flex; }
+    .btn-wa-sm { display: inline-flex; }
+    .nav-toggle { display: none; }
+    .nav-mobile { display: none; }
+  }
+</style>

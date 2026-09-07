@@ -1,0 +1,84 @@
+---
+// Avatar ilustrasi flat (inline SVG, gak ada request eksternal) buat
+// testimoni dll. Warna ngikutin brand: navy + gold dari tokens.css.
+//
+// - gender="pria" / "wanita" / "netral" (hasil guessGender dari lib/gender.js)
+// - Kalau ada photoUrl, foto asli yang dipakai (SVG cuma fallback-nya).
+//
+// Catatan teknis: sengaja TIDAK pakai <defs>/<linearGradient> biar gak ada
+// id dobel kalau avatar yang sama dirender berkali-kali di 1 halaman.
+interface Props {
+  gender?: 'pria' | 'wanita' | 'netral';
+  name?: string;
+  photoUrl?: string;
+  size?: number;
+}
+
+const { gender = 'netral', name = '', photoUrl, size = 56 } = Astro.props;
+---
+
+{photoUrl ? (
+  <img
+    class="avatar avatar-photo"
+    src={photoUrl}
+    alt={name ? `Foto ${name}` : 'Foto pemberi testimoni'}
+    width={size}
+    height={size}
+    loading="lazy"
+    style={`width:${size}px;height:${size}px`}
+  />
+) : gender === 'pria' ? (
+  <svg
+    class="avatar"
+    viewBox="0 0 96 96"
+    width={size}
+    height={size}
+    role="img"
+    aria-label={name ? `Avatar ${name}` : 'Avatar pria'}
+  >
+    <!-- Pria: rambut pendek, kemeja putih, blazer navy -->
+    <circle cx="48" cy="48" r="48" fill="#24425F" />
+    <path d="M48 64c-19 0-29 11-31 32h62c-2-21-12-32-31-32z" fill="#102A43" />
+    <path d="M40 64h16l-8 12z" fill="#F2F5F8" />
+    <path d="M48 64l-14 5 6 15 8-8z" fill="#0D2338" />
+    <path d="M48 64l14 5-6 15-8-8z" fill="#0D2338" />
+    <rect x="41" y="50" width="14" height="14" rx="6" fill="#D9A06B" />
+    <circle cx="48" cy="37" r="16" fill="#EAC79E" />
+    <path d="M32 37a16 16 0 0 1 32 0c0-3.5-5.2-5-16-5s-16 1.5-16 5z" fill="#26333F" />
+    <path d="M33 32c1.5-7 7-11 15-11s13.5 4 15 11c-4-4-9-5.5-15-5.5S37 28 33 32z" fill="#2E3D4C" />
+  </svg>
+) : gender === 'wanita' ? (
+  <svg
+    class="avatar"
+    viewBox="0 0 96 96"
+    width={size}
+    height={size}
+    role="img"
+    aria-label={name ? `Avatar ${name}` : 'Avatar wanita'}
+  >
+    <!-- Wanita: rambut panjang, anting gold, atasan gold -->
+    <circle cx="48" cy="48" r="48" fill="#24425F" />
+    <path d="M28 34c0-14 9-20 20-20s20 6 20 20v26c0 3-2.5 5-5 4 2-10 1-18-3-22-4 4-20 4-24 0-4 4-5 12-3 22-2.5 1-5-1-5-4z" fill="#3B2B26" />
+    <path d="M48 64c-18 0-28 11-30 32h60c-2-21-12-32-30-32z" fill="#DDAE6F" />
+    <path d="M40 64c2 6 5 9 8 9s6-3 8-9c-3-1.5-5-2-8-2s-5 .5-8 2z" fill="#CB9A5B" />
+    <rect x="41" y="50" width="14" height="12" rx="6" fill="#D9A06B" />
+    <circle cx="48" cy="38" r="16" fill="#EAC79E" />
+    <path d="M32 36a16 16 0 0 1 32 0c0-4-5.5-6-16-6s-16 2-16 6z" fill="#3B2B26" />
+    <circle cx="32.5" cy="44" r="2.6" fill="#DDAE6F" />
+    <circle cx="63.5" cy="44" r="2.6" fill="#DDAE6F" />
+  </svg>
+) : (
+  <svg
+    class="avatar"
+    viewBox="0 0 96 96"
+    width={size}
+    height={size}
+    role="img"
+    aria-label={name ? `Avatar ${name}` : 'Avatar'}
+  >
+    <!-- Netral: siluet orang, dipakai kalau gender gak bisa ditebak -->
+    <circle cx="48" cy="48" r="48" fill="#31506E" />
+    <circle cx="48" cy="38" r="15" fill="#DCE7F0" />
+    <path d="M48 57c-17 0-26 10-28 31h56c-2-21-11-31-28-31z" fill="#DCE7F0" />
+  </svg>
+)}

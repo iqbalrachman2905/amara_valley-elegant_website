@@ -1,0 +1,74 @@
+---
+const { content } = Astro.props;
+---
+
+{content.maps_link && (
+  <section id="lokasi" class="maps-section">
+    <div class="container">
+      <div class="maps-card" data-reveal>
+        <div class="maps-text">
+          <span class="eyebrow">Lokasi</span>
+          <h2>Cek Lokasi Lengkap di Google Maps</h2>
+          <p>Lihat rute, jarak, dan kondisi sekitar cluster langsung dari Google Maps.</p>
+        </div>
+        <div class="map-embed-wrapper">
+          <iframe 
+            src={content.maps_link} 
+            width="100%" 
+            height="400" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .maps-section {
+    padding-block: var(--space-lg);
+  }
+  .maps-card {
+    background: var(--color-bg-paper);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    /* Dihapus align-items: flex-start supaya konten bisa melar (stretch) 100% */
+  }
+  .maps-text {
+    width: 100%;
+  }
+  .eyebrow {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+    margin-bottom: var(--space-xs);
+  }
+  .maps-text h2 {
+    font-size: 1.4rem;
+    margin-bottom: var(--space-xs);
+    color: var(--color-primary);
+  }
+  .maps-text p {
+    color: var(--color-navy-soft);
+    font-size: 0.92rem;
+  }
+  /* Styling khusus untuk bungkus peta */
+  .map-embed-wrapper {
+    width: 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden; /* Supaya ujung iframe ngikutin radius bungkusnya */
+    box-shadow: var(--shadow-card);
+  }
+  .map-embed-wrapper iframe {
+    display: block; /* Menghilangkan gap putih di bawah iframe */
+  }
+</style>

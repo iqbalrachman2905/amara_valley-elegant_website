@@ -1,0 +1,136 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { withBase } from '../../lib/paths.js';
+import { getSiteData } from '../../lib/api.js';
+import { safeImage, drivePreviewUrl } from '../../lib/image.js';
+
+const { content, articles } = await getSiteData();
+
+const articlesWithCover = await Promise.all(
+  articles.map(async (a) => {
+    const optimized = a.cover_url
+      ? await safeImage(drivePreviewUrl(a.cover_url, 600), { width: 600, format: 'webp', quality: 72 })
+      : null;
+    return { ...a, coverSrc: optimized?.src || null };
+  })
+);
+
+const pillarArticle = content.pillar_slug
+  ? articlesWithCover.find(a => a.slug === content.pillar_slug)
+  : null;
+const regularArticles = pillarArticle
+  ? articlesWithCover.filter(a => a.slug !== content.pillar_slug)
+  : articlesWithCover;
+---
+
+<BaseLayout
+  title={`Artikel - ${content.company_name || 'Arciv Property'}`}
+  description="Tips, info, dan panduan seputar hunian dari Arciv Property."
+  companyName={content.company_name}
+  companyPhone={content.footer_phone}
+  waNumber={content.whatsapp_number}
+>
+  <Navbar content={content} />
+
+  <main class="article-list-page">
+    <div class="container">
+      <Breadcrumb items={[
+        { label: 'Home', href: withBase('') },
+        { label: 'Artikel' }
+      ]} />
+
+      <div class="section-heading">
+        <span class="eyebrow">Artikel</span>
+        <h1>Tips & Info Seputar Hunian</h1>
+      </div>
+
+      {pillarArticle && (
+        <a href={withBase(`artikel/${pillarArticle.slug}/`)} class="pillar-card">
+          <span class="pillar-tag">📖 Panduan Utama</span>
+          {pillarArticle.coverSrc && <img src={pillarArticle.coverSrc} alt={pillarArticle.title} loading="lazy" />}
+          <h2>{pillarArticle.title}</h2>
+        </a>
+      )}
+
+      {regularArticles.length > 0 ? (
+        <div class="article-grid">
+          {regularArticles.map((a) => (
+            <ArticleCard article={a} coverSrc={a.coverSrc} />
+          ))}
+        </div>
+      ) : (
+        <p class="empty">Belum ada artikel yang terbit.</p>
+      )}
+    </div>
+  </main>
+
+  <Footer content={content} />
+</BaseLayout>
+
+<style>
+  .article-list-page {
+    padding-block: calc(var(--space-xl) + 60px) var(--space-xl);
+  }
+  .section-heading {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+  }
+  .eyebrow {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-gold);
+    margin-bottom: 6px;
+  }
+  .pillar-card {
+    display: block;
+    position: relative;
+    background: var(--color-navy);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    text-decoration: none;
+    margin-bottom: var(--space-lg);
+    box-shadow: var(--shadow-soft);
+  }
+  .pillar-card img {
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    object-fit: cover;
+    opacity: 0.5;
+  }
+  .pillar-tag {
+    position: absolute;
+    top: var(--space-sm);
+    left: var(--space-sm);
+    background: var(--color-gold);
+    color: var(--color-navy);
+    font-weight: 600;
+    font-size: 0.78rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+  }
+  .pillar-card h2 {
+    position: absolute;
+    bottom: var(--space-sm);
+    left: var(--space-sm);
+    right: var(--space-sm);
+    color: var(--color-white);
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+  }
+  .article-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-md);
+  }
+  .empty {
+    text-align: center;
+    color: var(--color-navy-soft);
+    padding: var(--space-lg) 0;
+  }
+</style>
