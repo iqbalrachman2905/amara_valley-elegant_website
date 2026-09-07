@@ -5,7 +5,7 @@
 let cachedSiteData = null;
 const articleCache = new Map();
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbyyLeTA878Lxi1HROrPBa-2ZG3yNBMBa4z0ZUxzmLs_ZaVmzOcLu0rPCAeu-DqxiVMpgQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyLnKTEuhejWK2KmNHisXKkJrnTmMa_fZ00yUnkzuFN4ItoSlS7awYhqImdyKUVaZPZ/exec';
 
 // Snapshot data terakhir yang berhasil diambil (disimpan manual di
 // data/snapshot.json). Dipakai sebagai fallback kalau Apps Script lagi
