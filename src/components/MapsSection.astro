@@ -12,7 +12,15 @@ function parseNumStat(raw) {
 
 const tolStat = parseNumStat(content.jarak_tol);
 const lrtStat = parseNumStat(content.jarak_lrt);
-const hasMap = !!(content.maps_link && content.maps_link.includes('maps'));
+// maps_link diambil langsung dari sheet Content baris maps_link — bisa berupa
+// embed URL (https://www.google.com/maps/embed?pb=...) atau link biasa.
+// Jika embed, tampilkan iframe. Jika link biasa, tampilkan tombol buka maps.
+const rawMaps = String(content.maps_link || '').trim();
+const isEmbed = rawMaps.includes('maps/embed') || rawMaps.includes('google.com/maps/embed');
+const hasMap = !!rawMaps && (rawMaps.includes('maps') || rawMaps.includes('google.com/maps') || isEmbed);
+// Jika bukan embed tapi link maps biasa, buat embed fallback via pencarian
+// (tidak sempurna, tapi tetap menampilkan sesuatu daripada kosong).
+const mapSrc = isEmbed ? rawMaps : rawMaps.includes('maps') ? rawMaps : null;
 ---
 
 <section id="lokasi" class="lokasi">
@@ -61,18 +69,24 @@ const hasMap = !!(content.maps_link && content.maps_link.includes('maps'));
     </div>
 
     <div class="lokasi-map" data-reveal style="--reveal-delay: 120ms">
-      {hasMap ? (
+      {hasMap && mapSrc ? (
         <iframe
-          src={content.maps_link}
-          title="Peta lokasi Amara Valley — Kelapa Dua, Depok"
+          src={mapSrc}
+          title="Peta lokasi Amara Valley — Kelapa Dua, Depok — sumber Content/maps_link"
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
           allowfullscreen
         ></iframe>
+      ) : hasMap && !mapSrc ? (
+        <div class="map-fallback">
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <p>Peta tersedia — buka di Google Maps</p>
+          <a href={rawMaps} target="_blank" rel="noopener noreferrer" class="btn btn-ink btn-sm" style="margin-top: 10px">Buka Maps</a>
+        </div>
       ) : (
         <div class="map-fallback">
           <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-          <p>Peta interaktif menyusul.</p>
+          <p>Peta interaktif menyusul — link maps_link belum diisi di Content sheet.</p>
         </div>
       )}
       <span class="map-pin">

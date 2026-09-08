@@ -1,30 +1,40 @@
 ---
 import { buildWaLink } from '../lib/format.js';
+import { drivePreviewUrl } from '../lib/image.js';
 const { content, imageResult } = Astro.props;
 const waLink = buildWaLink(content.whatsapp_number, `Halo, saya ingin bertanya soal siteplan & posisi unit ${content.hero_title || 'Amara Valley'}.`);
+// Link asli dari sheet Content baris siteplan — bisa berupa Google Drive link.
+// Jika ada, jadikan link download/preview untuk user.
+const rawSiteplanLink = content.siteplan || '';
+const previewLink = rawSiteplanLink ? drivePreviewUrl(rawSiteplanLink, 2000) : null;
 ---
 
 <section id="siteplan" class="siteplan">
   <div class="container siteplan-grid">
     <div class="siteplan-copy" data-reveal>
-      <p class="eyebrow">Siteplan</p>
+      <p class="eyebrow">Siteplan · dari Content sheet</p>
       <h2>Denah kawasan yang tertata,<br /><em class="accent-serif">satu gerbang</em> yang aman.</h2>
       <p class="sec-lead">
-        28 rumah dua lantai ditata dalam klaster eksklusif dengan sirkulasi yang lega.
-        Tanyakan posisi unit favorit Anda — termasuk yang masih tersedia — kepada tim kami.
+        {content.total_unit ? `${content.total_unit} rumah dua lantai` : '28 rumah dua lantai'} ditata dalam klaster eksklusif dengan sirkulasi yang lega.
+        Tanyakan posisi unit favorit Anda — termasuk yang masih tersedia — kepada tim kami. Siteplan diambil otomatis dari sheet Content baris siteplan.
       </p>
       <div class="siteplan-actions">
         <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-ink btn-sm">Tanya Posisi Unit</a>
         <a href="#unit" class="btn btn-outline btn-sm">Lihat Tipe Unit</a>
+        {previewLink && (
+          <a href={rawSiteplanLink} target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">Buka File Asli</a>
+        )}
       </div>
     </div>
 
     <figure class="siteplan-figure" data-reveal style="--reveal-delay: 120ms">
       {imageResult && (
-        <img src={imageResult.src} alt="Siteplan Amara Valley — Kelapa Dua, Depok" width={imageResult.attributes?.width || 1400} height={imageResult.attributes?.height || 900} loading="lazy" />
+        <a href={rawSiteplanLink || imageResult.src} target="_blank" rel="noopener noreferrer" title="Buka siteplan ukuran penuh">
+          <img src={imageResult.src} alt="Siteplan Amara Valley — Kelapa Dua, Depok" width={imageResult.width || 1400} height={imageResult.height || 900} loading="lazy" />
+        </a>
       )}
       <figcaption>
-        <span class="figure-tag">Gambar dapat berubah</span>
+        <span class="figure-tag">Gambar dapat berubah · sumber: Content/siteplan</span>
         {content.total_unit && <span class="figure-note">{content.total_unit} · {content.badge_text}</span>}
       </figcaption>
     </figure>

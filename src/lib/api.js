@@ -111,9 +111,19 @@ export async function getArticleBySlug(slug) {
   }
 }
 
-/** Cari foto pertama (sesuai urutan) untuk kategori & unit_id tertentu. */
+/** Cari foto pertama (sesuai urutan) untuk kategori & unit_id tertentu. Case-insensitive agar sheet typo kapital tetap kebaca. */
 export function findCoverImage(gallery, kategori, unitId) {
+  const k = String(kategori || '').toLowerCase();
+  const u = String(unitId || '').toLowerCase();
   return gallery
-    .filter(g => g.kategori === kategori && g.unit_id === unitId && g.image_url)
+    .filter(g => String(g.kategori || '').toLowerCase() === k && String(g.unit_id || '').toLowerCase() === u && g.image_url)
     .sort((a, b) => (a.urutan || 0) - (b.urutan || 0))[0] || null;
+}
+
+/** Helper tambahan: cari semua foto untuk kategori tertentu (progress, tentang, dll) */
+export function findImagesByCategory(gallery, kategori) {
+  const k = String(kategori || '').toLowerCase();
+  return gallery
+    .filter(g => String(g.kategori || '').toLowerCase() === k && g.image_url)
+    .sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
 }

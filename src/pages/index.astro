@@ -60,26 +60,48 @@ const heroCover = findCoverImage(gallery, 'hero', 'hero');
 const heroImageResult = await pickImage(heroCover?.thumbnail_url || heroCover?.image_url, dummyHero, { width: 1920, height: 1280, quality: 70 });
 
 // ---------- TENTANG ----------
-const tentangCover = findCoverImage(gallery, 'tentang', '') || gallery.find(g => g.kategori === 'tentang');
+// Ambil gambar kategori "tentang" dan "progress" dari sheet Gallery.
+// - Kategori tentang: foto utama
+// - Kategori progress: foto pendamping
+// Jika kategori bertambah foto, otomatis terdeteksi karena sorting by urutan.
+const tentangList = gallery
+  .filter(g => String(g.kategori || '').toLowerCase() === 'tentang')
+  .sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
+
+const progressListForAbout = gallery
+  .filter(g => String(g.kategori || '').toLowerCase() === 'progress')
+  .sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
+
+const tentangCoverMain = tentangList[0] || findCoverImage(gallery, 'tentang', '') || gallery.find(g => String(g.kategori || '').toLowerCase() === 'tentang');
+const progressCoverSide = progressListForAbout[0] || gallery.find(g => String(g.kategori || '').toLowerCase() === 'progress');
+
 const aboutImgs = [
-  await pickImage(tentangCover?.thumbnail_url || tentangCover?.image_url, dummyLiving, { width: 900, height: 1120 }),
-  await pickImage(null, dummyDetail, { width: 620, height: 500 })
+  await pickImage(tentangCoverMain?.thumbnail_url || tentangCoverMain?.image_url, dummyLiving, { width: 900, height: 1120 }),
+  await pickImage(progressCoverSide?.thumbnail_url || progressCoverSide?.image_url, dummyDetail, { width: 620, height: 500 })
 ].filter(Boolean);
 
 // ---------- SPESIFIKASI ----------
 const specImgs = [await pickImage(null, dummyBedroom, { width: 900, height: 680 })].filter(Boolean);
 
 // ---------- SITEPLAN ----------
+// Ambil dari sheet Content baris siteplan — sudah diproses di api.gs jadi
+// siteplan_thumbnail (link thumbnail Drive) + siteplan (link download).
 const siteplanResult = await pickImage(content.siteplan_thumbnail || content.siteplan, dummySiteplan, { width: 1500, height: 980 });
 
-// ---------- UNIT (cover per kode unit) ----------
+// ---------- UNIT (cover per kode unit + deskripsi asli dari sheet) ----------
+// Kolom deskripsi di sheet Units sekarang berisi penjelasan tiap unit.
+// Jika masih berisi kode hex artefak template lama, otomatis difilter agar
+// tidak tampil. Status unit diambil langsung dari spreadsheet sehingga
+// otomatis terupdate saat sheet diubah (tanpa perlu edit kode).
 const FALLBACK_COVERS = [dummyFacade, dummyLiving, dummyStreet, dummyDetail];
-// Kolom "deskripsi" di sheet Unit saat ini berisi kode internal (hex, artefak
-// template) — bukan teks pemasaran. Filter kode semacam itu agar tak tampil.
 function cleanUnitDesc(raw) {
   const s = String(raw || '').trim();
   if (!s) return '';
-  if (/^[0-9A-Fa-f\s-]{8,}$/.test(s)) return ''; // kode hex artefak
+  // Filter artefak template lama: kode hex 8+ karakter, atau hanya angka/huruf acak
+  if (/^[0-9A-Fa-f\s-]{8,}$/.test(s)) return '';
+  if (/^[A-F0-9]{8,}$/.test(s)) return '';
+  // Jika deskripsi terlalu pendek dan mirip ID (mis. 2-4 karakter hex) juga filter
+  if (s.length <= 12 && /^[0-9A-Fa-f]+$/.test(s)) return '';
   return s;
 }
 const unitsWithCover = await Promise.all(
@@ -95,37 +117,50 @@ const unitsWithCover = await Promise.all(
   })
 );
 
-// ---------- GALERI (foto unik per file, max 10; dummy penyusul) ----------
+// ---------- GALERI ----------
+// Hanya ambil foto kategori "progress" sesuai permintaan, lengkapi caption.
+// Jika kategori progress bertambah foto di spreadsheet, otomatis bertambah
+// di website karena tidak ada batas hard-coded selain dedup file_id.
 const seenFiles = new Set();
-const uniqueGallery = gallery.filter(g => {
-  const fid = g.file_id || g.image_url;
-  if (!fid || seenFiles.has(fid)) return false;
-  seenFiles.add(fid);
-  return true;
-}).sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
+const progressGalleryRaw = gallery
+  .filter(g => String(g.kategori || '').toLowerCase() === 'progress')
+  .filter(g => {
+    const fid = g.file_id || g.image_url;
+    if (!fid) return false;
+    if (seenFiles.has(fid)) return false;
+    seenFiles.add(fid);
+    return true;
+  })
+  .sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
 
 const galleryTilesRaw = await Promise.all(
-  uniqueGallery.slice(0, 12).map(async (item, i) => {
+  progressGalleryRaw.map(async (item, i) => {
     const base = item.thumbnail_url || item.image_url;
     const thumb = await pickImage(base, null, { width: 640, height: 480, quality: 70 });
     const full = await pickImage(base, null, { width: 1400, height: 1050, quality: 76 });
     if (!thumb || !full) return null;
-    return { id: item.id || `g${i}`, thumbSrc: thumb.src, fullSrc: full.src, caption: item.caption || '' };
+    return {
+      id: item.id || `g${i}`,
+      thumbSrc: thumb.src,
+      fullSrc: full.src,
+      caption: item.caption || `Progress ${i + 1}`
+    };
   })
 );
-let galleryItems = galleryTilesRaw.filter(Boolean).slice(0, 10);
+let galleryItems = galleryTilesRaw.filter(Boolean);
 
-// Penyangga visual — dipakai kalau foto remote tak tersedia (mis. saat build
-// tanpa akses Drive): galeri tetap tampil cantik dengan visualisasi lokal.
+// Fallback visual jika belum ada foto progress di Drive (mis. build offline)
+// — galeri tetap tampil cantik, tapi akan tergantikan otomatis saat foto
+// progress asli tersedia di sheet.
 const DUMMY_TILES = [
-  { src: dummyLiving, cap: '' },
-  { src: dummyFacade, cap: '' },
-  { src: dummyStreet, cap: '' },
-  { src: dummyBedroom, cap: '' },
-  { src: dummyDetail, cap: '' },
-  { src: dummyHero, cap: '' }
+  { src: dummyLiving, cap: 'Interior Living — Visualisasi' },
+  { src: dummyFacade, cap: 'Fasad Unit — Visualisasi' },
+  { src: dummyStreet, cap: 'Lingkungan Klaster — Visualisasi' },
+  { src: dummyBedroom, cap: 'Kamar Tidur — Visualisasi' },
+  { src: dummyDetail, cap: 'Detail Material — Visualisasi' },
+  { src: dummyHero, cap: 'Amara Valley — Visualisasi' }
 ];
-if (galleryItems.length < 5) {
+if (galleryItems.length < 3) {
   const usedKeys = new Set();
   const extra = [];
   for (const d of DUMMY_TILES) {
@@ -141,10 +176,11 @@ if (galleryItems.length < 5) {
 }
 
 // ---------- VIDEO ----------
+// Ambil dari sheet Content baris video — support link youtube watch, youtu.be, embed.
 const videoId = extractYoutubeId(content.video);
 
 // ---------- STAT ----------
-const isAvailable = (u) => !/sold/i.test(String(u.status || ''));
+const isAvailable = (u) => !/sold|terjual/i.test(String(u.status || ''));
 const availableUnits = units.filter(isAvailable).length;
 const totalUnits = content.total_unit || `${units.length} Exclusive`;
 
@@ -198,7 +234,7 @@ const articlesWithCover = await Promise.all(
           </div>
           <p class="sec-note">
             {availableUnits > 0 ? `${availableUnits} unit masih tersedia` : 'Seluruh unit dalam proses'} —
-            setiap unit dapat dikonsultasikan langsung lewat WhatsApp.
+            setiap unit dapat dikonsultasikan langsung lewat WhatsApp. Status unit otomatis terupdate dari spreadsheet.
           </p>
         </div>
         <div data-reveal style="--reveal-delay: 120ms">
@@ -210,17 +246,17 @@ const articlesWithCover = await Promise.all(
     <!-- 07 · Spesifikasi material -->
     <Spesifikasi content={content} specImgs={specImgs} />
 
-    <!-- 08 · Galeri -->
-    <GallerySection items={galleryItems} />
+    <!-- 08 · Galeri — hanya kategori progress -->
+    <GallerySection items={galleryItems} subtitle="Foto progress pembangunan langsung dari lapangan — otomatis terupdate saat foto baru ditambahkan di sheet Gallery kategori progress." />
 
-    <!-- 09 · Siteplan -->
+    <!-- 09 · Siteplan — dari Content baris siteplan -->
     <SiteplanSection content={content} imageResult={siteplanResult} />
 
-    <!-- 10 · Lokasi -->
+    <!-- 10 · Lokasi — dari Content baris maps_link -->
     <MapsSection content={content} />
 
-    <!-- 11 · Video -->
-    <VideoSection videoId={videoId} />
+    <!-- 11 · Video — dari Content baris video -->
+    <VideoSection videoId={videoId} content={content} />
 
     <!-- 12 · Simulasi KPR -->
     <section id="kpr" class="kpr-section">
@@ -239,7 +275,7 @@ const articlesWithCover = await Promise.all(
     <!-- 13 · FAQ -->
     <FaqHomepage content={content} />
 
-    <!-- 14 · Testimoni -->
+    <!-- 14 · Testimoni — dari sheet Testimonials -->
     <Testimonial testimonials={testimonials} />
 
     <!-- 15 · Artikel terbaru -->
@@ -249,7 +285,7 @@ const articlesWithCover = await Promise.all(
     <CTABand content={content} />
   </main>
 
-  <!-- 17 · Footer -->
+  <!-- 17 · Footer — lengkap sosial media dari Content -->
   <Footer content={content} />
 </BaseLayout>
 
@@ -275,7 +311,7 @@ const articlesWithCover = await Promise.all(
   }
   .sec-head h2 em { font-size: 1.05em; }
   .sec-note {
-    max-width: 46ch;
+    max-width: 52ch;
     color: var(--color-muted);
     font-size: 0.94rem;
   }

@@ -18,16 +18,14 @@ const navLinks = [
 ];
 
 const brandName = content.hero_title || content.company_name || 'Amara Valley';
+const logoUrl = withBase('favicon.svg');
 ---
 
 <header class="navbar" data-navbar>
   <div class="container navbar-inner">
     <a href={home} class="brand" aria-label={`${brandName} — kembali ke beranda`}>
       <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 64 64" width="34" height="34" fill="none" aria-hidden="true">
-          <rect x="2" y="2" width="60" height="60" rx="12" stroke="currentColor" stroke-width="2.6" />
-          <path d="M16 46V23.5a3 3 0 0 1 3-3h7.5a3 3 0 0 1 3 3V46M16 46h9M16 36h13.5M35 46V17.5a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3V46m0 0V27h6.5a2.5 2.5 0 0 1 2.5 2.5V46" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
-        </svg>
+        <img src={logoUrl} alt="" width="38" height="38" loading="eager" decoding="async" class="brand-logo" />
       </span>
       <span class="brand-text">
         <span class="brand-name">{brandName}</span>
@@ -150,9 +148,27 @@ const brandName = content.hero_title || content.company_name || 'Amara Valley';
   .navbar.is-scrolled .brand { color: var(--color-primary); }
   .brand-mark {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: var(--color-gold-light);
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--color-bg-main) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-gold-light) 22%, transparent);
   }
-  .navbar.is-scrolled .brand-mark { color: var(--color-secondary); }
+  .navbar.is-scrolled .brand-mark { 
+    color: var(--color-secondary);
+    background: var(--color-bg-paper);
+    border-color: var(--color-border);
+  }
+  .brand-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
   .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
   .brand-name {
     font-family: var(--font-display);

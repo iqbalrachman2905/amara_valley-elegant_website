@@ -3,6 +3,8 @@ import { prettifyName } from '../lib/gender.js';
 
 const { testimonials = [] } = Astro.props;
 
+// Testimonials diambil langsung dari sheet Testimonials via API (action=testimonials)
+// — jika sheet bertambah data, otomatis muncul di website tanpa edit kode.
 const items = (testimonials || [])
   .map((t) => {
     const name = prettifyName(t.name);
@@ -19,10 +21,10 @@ const initials = (n) => n.trim().split(/\s+/).map((p) => p[0] || '').slice(0, 2)
 ---
 
 {hasItems && (
-  <section class="testi">
+  <section class="testi" id="testimoni">
     <div class="container">
       <div class="testi-head" data-reveal>
-        <p class="eyebrow">Testimoni</p>
+        <p class="eyebrow">Testimoni · {items.length} ulasan · dari sheet Testimonials</p>
         <h2>Kata mereka yang sudah <em class="accent-serif">tinggal</em></h2>
       </div>
 
@@ -122,5 +124,8 @@ const initials = (n) => n.trim().split(/\s+/).map((p) => p[0] || '').slice(0, 2)
   .testi-stars { display: inline-flex; gap: 2px; color: var(--color-secondary); }
   @media (min-width: 700px) {
     .testi-list { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1100px) {
+    .testi-list { grid-template-columns: repeat(3, 1fr); }
   }
 </style>

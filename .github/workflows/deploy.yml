@@ -3,6 +3,10 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch: {}
+  schedule:
+    # Auto rebuild setiap 6 jam agar status unit, galeri progress, testimonial, dll
+    # yang diambil dari spreadsheet otomatis terupdate tanpa perlu push manual.
+    - cron: '0 */6 * * *'
 
 permissions:
   contents: read

@@ -2,6 +2,7 @@
 import GalleryLightbox from './GalleryLightbox.vue';
 
 const { items, subtitle } = Astro.props;
+const count = items?.length || 0;
 ---
 
 {items.length > 0 && (
@@ -9,10 +10,10 @@ const { items, subtitle } = Astro.props;
     <div class="container">
       <div class="galeri-head" data-reveal>
         <div>
-          <p class="eyebrow">Galeri</p>
-          <h2>Rasakan suasananya</h2>
+          <p class="eyebrow">Galeri Progress · {count} foto</p>
+          <h2>Lihat progres<br/><em class="accent-serif">pembangunan</em> terkini</h2>
         </div>
-        <p class="galeri-note">{subtitle || 'Sebagian foto merupakan visualisasi & ilustrasi — foto asli dapat dilihat saat survey.'}</p>
+        <p class="galeri-note">{subtitle || 'Foto progress pembangunan langsung dari lapangan — otomatis bertambah saat foto baru ditambahkan di sheet Gallery kategori progress.'}</p>
       </div>
       <div data-reveal style="--reveal-delay: 120ms">
         <GalleryLightbox items={items} client:visible />

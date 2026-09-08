@@ -66,12 +66,28 @@ export function formatDate(iso) {
 }
 
 const STATUS_STYLE = {
-  'Available': { color: 'var(--color-status-available)', label: 'Tersedia' },
-  'Sold': { color: 'var(--color-status-sold)', label: 'Terjual' },
-  'Ready Unit': { color: 'var(--color-status-ready)', label: 'Ready Unit' },
-  'Progress (Ready Stock)': { color: 'var(--color-status-progress)', label: 'Progress' }
+  'available': { color: 'var(--color-status-available)', label: 'Tersedia' },
+  'tersedia': { color: 'var(--color-status-available)', label: 'Tersedia' },
+  'sold': { color: 'var(--color-status-sold)', label: 'Terjual' },
+  'terjual': { color: 'var(--color-status-sold)', label: 'Terjual' },
+  'booked': { color: 'var(--color-status-progress)', label: 'Booked' },
+  'booking': { color: 'var(--color-status-progress)', label: 'Booking' },
+  'ready unit': { color: 'var(--color-status-ready)', label: 'Ready Unit' },
+  'ready': { color: 'var(--color-status-ready)', label: 'Ready Unit' },
+  'progress (ready stock)': { color: 'var(--color-status-progress)', label: 'Progress' },
+  'progress': { color: 'var(--color-status-progress)', label: 'Progress' },
 };
 
 export function statusStyle(status) {
-  return STATUS_STYLE[status] || { color: 'var(--color-navy-soft)', label: status || '-' };
+  const raw = String(status || '').trim();
+  if (!raw) return { color: 'var(--color-navy-soft)', label: '-' };
+  const key = raw.toLowerCase();
+  if (STATUS_STYLE[key]) return STATUS_STYLE[key];
+  // fallback: cari yang mengandung kata kunci
+  if (key.includes('sold') || key.includes('terjual')) return STATUS_STYLE['sold'];
+  if (key.includes('book')) return STATUS_STYLE['booked'];
+  if (key.includes('ready')) return STATUS_STYLE['ready unit'];
+  if (key.includes('progress')) return STATUS_STYLE['progress'];
+  if (key.includes('avail') || key.includes('tersedia')) return STATUS_STYLE['available'];
+  return { color: 'var(--color-navy-soft)', label: raw };
 }

@@ -1,21 +1,28 @@
 ---
 const { videoId } = Astro.props;
+const { content } = Astro.props;
+// videoId sudah diekstrak dari content.video di index.astro — sumbernya
+// sheet Content baris video, support watch?v=, youtu.be/, embed/
 const src = videoId
-  ? `https://www.youtube-nocookie.com/embed/${videoId}`
+  ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`
   : null;
+const rawVideoUrl = content?.video || '';
 ---
 
-{src && (
-  <section class="video-sec">
+{src ? (
+  <section class="video-sec" id="video">
     <div class="container video-inner">
       <div class="video-head" data-reveal>
-        <p class="eyebrow">Video</p>
+        <p class="eyebrow">Video · dari Content sheet</p>
         <h2>Tonton dulu,<br />rasakan kemudian.</h2>
+        {rawVideoUrl && (
+          <p class="video-sub">Sumber: <a href={rawVideoUrl} target="_blank" rel="noopener noreferrer">{rawVideoUrl}</a></p>
+        )}
       </div>
       <div class="video-frame" data-reveal style="--reveal-delay: 120ms">
         <iframe
           src={src}
-          title="Video Amara Valley"
+          title="Video Amara Valley — sumber Content/video"
           loading="lazy"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
@@ -23,7 +30,17 @@ const src = videoId
       </div>
     </div>
   </section>
-)}
+) : rawVideoUrl ? (
+  <section class="video-sec" id="video">
+    <div class="container video-inner">
+      <div class="video-head" data-reveal>
+        <p class="eyebrow">Video</p>
+        <h2>Video segera hadir</h2>
+        <p class="video-sub">Link video di Content sheet belum valid YouTube: {rawVideoUrl}</p>
+      </div>
+    </div>
+  </section>
+) : null}
 
 <style>
   .video-sec {
@@ -47,5 +64,15 @@ const src = videoId
     width: 100%;
     aspect-ratio: 16 / 9;
     border: 0;
+  }
+  .video-sub {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+  }
+  .video-sub a {
+    color: var(--color-secondary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 </style>
