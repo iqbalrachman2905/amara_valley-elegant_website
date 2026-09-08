@@ -5,13 +5,13 @@
     "price_from": 900000000,
     "whatsapp_number": "6285612345678",
     "maps_link": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1449.3090337458605!2d106.84888947647798!3d-6.367301163336394!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ec6ef22f81e1%3A0x273cabdf9cbd6101!2s",
-    "about_description": "Cikal bakal Puri Kencana Permai di Radar Auri, Cimanggis, dirintis sejak pertengahan era 2010-an sebagai pelopor klaster modern di kawasan tersebut. Kehadirannya dipicu oleh lonjakan kebutuhan hunian komuter premium yang terintegrasi dengan rencana proyek strategis nasional.Fakta menariknya, perumahan ini berkembang pesat tepat seiring beroperasinya Tol Cijago dan LRT Jabodebek pada awal 2020-an. Hal tersebut melesatkan nilai investasinya dan mengubah area perkebunan lokal Cimanggis menjadi salah satu episentrum hunian paling diburu di gerbang selatan Jakarta.Kini, transformasi berlanjut melalui Shanum Haven Extension. Proyek teranyar ini menghadirkan fase eksklusif sebanyak 43 unit rumah dua lantai modern minimalis.",
+    "about_description": "Amara Valley adalah klaster rumah tapak bergaya classic-modern karya Amara Land — 28 unit eksklusif dua lantai yang ditata di Kelapa Dua, salah satu kawasan tumbuh di jantung Kota Depok.\n\nSetiap rumah dibangun di lahan 56–73 m² dengan luas bangunan 70 m² — 3 kamar tidur, 3 kamar mandi, dan carport untuk 2 mobil. Materialnya berbicara sendiri: dinding hebel dengan plester halus, lantai granit 60x60, pintu utama solid wood, kusen full aluminium, hingga penutup atap genteng bitumen di atas rangka baja ringan.\n\nLokasinya yang berada di pusat kota, ±20 menit dari akses tol, menjadikan Amara Valley pilihan yang masuk akal bagi keluarga komuter yang menginginkan rumah elegan dengan nilai tumbuh.",
     "footer_phone": "6285612345678",
     "footer_email": "info@amaraland.com",
     "company_name": "Amara Land",
     "tagline": "Perumahan Modern di jantung Kota Depok",
     "copyright_text": "© 2026 Amara Land. All rights reserved.",
-    "address": "(opsional, alamat kantor kalau ada)",
+    "address": "Jl. Kelapa Dua No. 88, Cimanggis, Depok, Jawa Barat",
     "badge_text": "Cluster Premium di Depok Kelapa Dua",
     "promo_dp": "DP 0%",
     "promo_booking": "Booking Fee 3 Juta",
@@ -32,7 +32,7 @@
     "bank_partner": "BSI",
     "promo_diskon_kpr": "",
     "promo_diskon_cash": "",
-    "fasilitas": "",
+    "fasilitas": "One Gate System, Taman Bermain, CCTV 24 Jam, Jalan Row 6m",
     "promo_items_1": "Biaya KPR",
     "promo_items_2": "Biaya AJB Notaris - Validasi Pajak",
     "promo_items_3": "Biaya Balik Nama - Hak Tanggungan",
@@ -56,7 +56,11 @@
     "spec_9": "Sumber Air:: PDAM/Bor + Jet Pump",
     "spec_10": "Listrik Rumah::PLN 2200 Watt",
     "rumah": "2 Lantai::Desain Modern::3 Kamar Tidur::3 Kamar Mandi::Carport 2 Mobil",
-    "siteplan_thumbnail": "https://drive.google.com/thumbnail?id=1-yAAJSVj6fbU0eqdDLJKLRZe9CsmWJBh&sz=w1000"
+    "siteplan_thumbnail": "https://drive.google.com/thumbnail?id=1-yAAJSVj6fbU0eqdDLJKLRZe9CsmWJBh&sz=w1000",
+    "facebook_url": "https://facebook.com/amaravalleydepok",
+    "youtube_url": "https://youtube.com/@amaravalleydepok",
+    "x_url": "https://x.com/amaravalleydepok",
+    "tiktok_url": "https://tiktok.com/@amaravalleydepok"
   },
   "units": [
     {
@@ -68,7 +72,7 @@
       "kamar": 3,
       "harga": 1047000000,
       "status": "Available",
-      "deskripsi": "06B693FE14"
+      "deskripsi": "Hook, posisi strategis dekat gerbang utama, sirkulasi udara optimal"
     },
     {
       "id": 2,
@@ -79,7 +83,7 @@
       "kamar": 3,
       "harga": 1047000000,
       "status": "Available",
-      "deskripsi": "1E62055D79"
+      "deskripsi": "Posisi tengah, privasi terjaga, dekat taman cluster"
     },
     {
       "id": 3,
@@ -90,7 +94,7 @@
       "kamar": 3,
       "harga": 1047000000,
       "status": "Available",
-      "deskripsi": "10DD9DBBC9"
+      "deskripsi": "Dekat area hijau, pencahayaan alami maksimal, 2 carport"
     },
     {
       "id": 4,
@@ -101,7 +105,7 @@
       "kamar": 3,
       "harga": 1047000000,
       "status": "Available",
-      "deskripsi": "6AE49FCF16"
+      "deskripsi": "Sudut tenang, cocok untuk keluarga muda, akses mudah"
     },
     {
       "id": 5,
@@ -112,7 +116,7 @@
       "kamar": 3,
       "harga": 1047000000,
       "status": "Sold",
-      "deskripsi": "A061702BF8"
+      "deskripsi": "Sudah terjual — contoh unit hook dengan taman samping"
     },
     {
       "id": 6,
@@ -123,7 +127,7 @@
       "kamar": 3,
       "harga": 1035000000,
       "status": "Available",
-      "deskripsi": "336F918D34"
+      "deskripsi": "LT 64, efisien, desain classic-modern dengan 3KT 3KM"
     },
     {
       "id": 7,
@@ -134,7 +138,7 @@
       "kamar": 3,
       "harga": 1104000000,
       "status": "Available",
-      "deskripsi": "895B502AFA"
+      "deskripsi": "LT 70 paling luas di baris A, halaman belakang lega"
     },
     {
       "id": 8,
@@ -145,7 +149,7 @@
       "kamar": 3,
       "harga": 1024000000,
       "status": "Available",
-      "deskripsi": "D1B9BF93CB"
+      "deskripsi": "LT 63, harga terjangkau, posisi dekat masjid cluster"
     },
     {
       "id": 9,
@@ -156,7 +160,7 @@
       "kamar": 3,
       "harga": 1001000000,
       "status": "Available",
-      "deskripsi": "E25133258D"
+      "deskripsi": "LT 61 compact, perawatan mudah, investasi cerdas"
     },
     {
       "id": 10,
@@ -167,7 +171,7 @@
       "kamar": 3,
       "harga": 978000000,
       "status": "Available",
-      "deskripsi": "89158DB632"
+      "deskripsi": "LT 59 paling ekonomis, DP 0% + free biaya KPR"
     },
     {
       "id": 11,
@@ -178,7 +182,7 @@
       "kamar": 3,
       "harga": 966000000,
       "status": "Available",
-      "deskripsi": "2E20C9343D"
+      "deskripsi": "LT 58, cocok untuk pasangan baru, cicilan ringan"
     },
     {
       "id": 12,
@@ -189,7 +193,7 @@
       "kamar": 3,
       "harga": 943000000,
       "status": "Available",
-      "deskripsi": "B0A4374CC2"
+      "deskripsi": "LT 56 minimalis, smart layout 70m2 bangunan"
     },
     {
       "id": 13,
@@ -200,7 +204,7 @@
       "kamar": 3,
       "harga": 1001000000,
       "status": "Available",
-      "deskripsi": "D57B34FA0C"
+      "deskripsi": "LT 61, dekat playground anak, aman untuk keluarga"
     },
     {
       "id": 14,
@@ -211,7 +215,7 @@
       "kamar": 3,
       "harga": 1070000000,
       "status": "Available",
-      "deskripsi": "EAA35D07BC"
+      "deskripsi": "LT 67, posisi hook belakang, view taman"
     },
     {
       "id": 15,
@@ -222,7 +226,7 @@
       "kamar": 3,
       "harga": 1081000000,
       "status": "Available",
-      "deskripsi": "1A94FA1B5F"
+      "deskripsi": "LT 68, double carport + taman belakang"
     },
     {
       "id": 16,
@@ -233,7 +237,7 @@
       "kamar": 3,
       "harga": 1058000000,
       "status": "Available",
-      "deskripsi": "5B9724EE8F"
+      "deskripsi": "LT 66, sirkulasi silang, sejuk alami"
     },
     {
       "id": 17,
@@ -244,7 +248,7 @@
       "kamar": 3,
       "harga": 1104000000,
       "status": "Available",
-      "deskripsi": "A3EB24A664"
+      "deskripsi": "Tipe B paling premium, LT 70 hook depan"
     },
     {
       "id": 18,
@@ -255,7 +259,7 @@
       "kamar": 3,
       "harga": 1081000000,
       "status": "Available",
-      "deskripsi": "AA5337569D"
+      "deskripsi": "LT 68, dekat pos security, one gate system"
     },
     {
       "id": 19,
@@ -266,7 +270,7 @@
       "kamar": 3,
       "harga": 1070000000,
       "status": "Available",
-      "deskripsi": "B54041CA01"
+      "deskripsi": "LT 67, tenang, jauh dari kebisingan jalan"
     },
     {
       "id": 20,
@@ -277,7 +281,7 @@
       "kamar": 3,
       "harga": 1104000000,
       "status": "Sold",
-      "deskripsi": "F023E5E0A9"
+      "deskripsi": "Sold — unit favorit sudah terjual"
     },
     {
       "id": 21,
@@ -288,7 +292,7 @@
       "kamar": 3,
       "harga": 1047000000,
       "status": "Available",
-      "deskripsi": "303274BC80"
+      "deskripsi": "Cluster C baris depan, akses tercepat ke gerbang"
     },
     {
       "id": 22,
@@ -299,7 +303,7 @@
       "kamar": 3,
       "harga": 1081000000,
       "status": "Available",
-      "deskripsi": "A69A404FF9"
+      "deskripsi": "LT 68, view jalan cluster 6m, lega"
     },
     {
       "id": 23,
@@ -310,7 +314,7 @@
       "kamar": 3,
       "harga": 1081000000,
       "status": "Available",
-      "deskripsi": "800DA1B6FD"
+      "deskripsi": "LT 68, tetangga sudah huni, lingkungan jadi"
     },
     {
       "id": 24,
@@ -321,7 +325,7 @@
       "kamar": 3,
       "harga": 1001000000,
       "status": "Sold",
-      "deskripsi": "0EBC665267"
+      "deskripsi": "Sold — posisi strategis sudah terjual"
     },
     {
       "id": 25,
@@ -332,7 +336,7 @@
       "kamar": 3,
       "harga": 1001000000,
       "status": "Available",
-      "deskripsi": "A6BAE46ED4"
+      "deskripsi": "LT 61, siap huni progress 80%"
     },
     {
       "id": 26,
@@ -343,7 +347,7 @@
       "kamar": 3,
       "harga": 1139000000,
       "status": "Available",
-      "deskripsi": "839C951468"
+      "deskripsi": "LT 73 paling luas, hook 2 sisi, taman luas"
     },
     {
       "id": 27,
@@ -354,7 +358,7 @@
       "kamar": 3,
       "harga": 1139000000,
       "status": "Available",
-      "deskripsi": "BAEF9F7A12"
+      "deskripsi": "LT 73 hook, double exposure cahaya"
     },
     {
       "id": 28,
@@ -365,7 +369,7 @@
       "kamar": 3,
       "harga": 1104000000,
       "status": "Available",
-      "deskripsi": "A898D3C038"
+      "deskripsi": "LT 70 ujung, privasi maksimal, dekat exit"
     }
   ],
   "gallery": [
@@ -658,6 +662,86 @@
       "file_id": "1Kut-47P29fZAQ-7pfSfzxlbyRGfp92Vc",
       "image_url": "https://drive.google.com/uc?export=download&id=1Kut-47P29fZAQ-7pfSfzxlbyRGfp92Vc",
       "thumbnail_url": "https://drive.google.com/thumbnail?id=1Kut-47P29fZAQ-7pfSfzxlbyRGfp92Vc&sz=w1000"
+    },
+    {
+      "id": 35,
+      "kategori": "tentang",
+      "unit_id": "",
+      "urutan": 1,
+      "caption": "Fasad Classic Modern — Amara Valley",
+      "file_id": "1rSeliq8IGhVeECy5nrKrW9pl2KCxkIK-",
+      "image_url": "https://drive.google.com/uc?export=download&id=1rSeliq8IGhVeECy5nrKrW9pl2KCxkIK-",
+      "thumbnail_url": "https://drive.google.com/thumbnail?id=1rSeliq8IGhVeECy5nrKrW9pl2KCxkIK-&sz=w1000"
+    },
+    {
+      "id": 36,
+      "kategori": "tentang",
+      "unit_id": "",
+      "urutan": 2,
+      "caption": "Interior Living Elegan — Tentang Klaster",
+      "file_id": "1N3Nj9IhWWDP2T6qX0_EoYQ7DoX2Gppsx",
+      "image_url": "https://drive.google.com/uc?export=download&id=1N3Nj9IhWWDP2T6qX0_EoYQ7DoX2Gppsx",
+      "thumbnail_url": "https://drive.google.com/thumbnail?id=1N3Nj9IhWWDP2T6qX0_EoYQ7DoX2Gppsx&sz=w1000"
+    },
+    {
+      "id": 37,
+      "kategori": "progress",
+      "unit_id": "",
+      "urutan": 1,
+      "caption": "Pondasi Borepile Selesai — Blok A",
+      "file_id": "1Dpz503PuX7Mdf7Xl6pXnUwOn-AeozkOs",
+      "image_url": "https://drive.google.com/uc?export=download&id=1Dpz503PuX7Mdf7Xl6pXnUwOn-AeozkOs",
+      "thumbnail_url": "https://drive.google.com/thumbnail?id=1Dpz503PuX7Mdf7Xl6pXnUwOn-AeozkOs&sz=w1000"
+    },
+    {
+      "id": 38,
+      "kategori": "progress",
+      "unit_id": "",
+      "urutan": 2,
+      "caption": "Pemasangan Hebel Lantai 1 — Blok B",
+      "file_id": "1TwN2_IYWxiNxgl9WnAMEL4e8japa4SLi",
+      "image_url": "https://drive.google.com/uc?export=download&id=1TwN2_IYWxiNxgl9WnAMEL4e8japa4SLi",
+      "thumbnail_url": "https://drive.google.com/thumbnail?id=1TwN2_IYWxiNxgl9WnAMEL4e8japa4SLi&sz=w1000"
+    },
+    {
+      "id": 39,
+      "kategori": "progress",
+      "unit_id": "",
+      "urutan": 3,
+      "caption": "Pengecoran Dak Lantai 2 — Blok C",
+      "file_id": "1ho8FyCxh5DC5mSR3hrzqRedm3Oxpoy9b",
+      "image_url": "https://drive.google.com/uc?export=download&id=1ho8FyCxh5DC5mSR3hrzqRedm3Oxpoy9b",
+      "thumbnail_url": "https://drive.google.com/thumbnail?id=1ho8FyCxh5DC5mSR3hrzqRedm3Oxpoy9b&sz=w1000"
+    },
+    {
+      "id": 40,
+      "kategori": "progress",
+      "unit_id": "",
+      "urutan": 4,
+      "caption": "Pemasangan Rangka Atap Baja Ringan",
+      "file_id": "1NhulGhCgU8SP9aCqwIPt4-QQjgbGbpUu",
+      "image_url": "https://drive.google.com/uc?export=download&id=1NhulGhCgU8SP9aCqwIPt4-QQjgbGbpUu",
+      "thumbnail_url": "https://drive.google.com/thumbnail?id=1NhulGhCgU8SP9aCqwIPt4-QQjgbGbpUu&sz=w1000"
+    },
+    {
+      "id": 41,
+      "kategori": "progress",
+      "unit_id": "",
+      "urutan": 5,
+      "caption": "Finishing Granit & Cat Eksterior",
+      "file_id": "16VI_ULql-0rhqeOG29mmNSMNYbf4uQY4",
+      "image_url": "https://drive.google.com/uc?export=download&id=16VI_ULql-0rhqeOG29mmNSMNYbf4uQY4",
+      "thumbnail_url": "https://drive.google.com/thumbnail?id=16VI_ULql-0rhqeOG29mmNSMNYbf4uQY4&sz=w1000"
+    },
+    {
+      "id": 42,
+      "kategori": "progress",
+      "unit_id": "",
+      "urutan": 6,
+      "caption": "Jalan Cor Row 6m & Drainase",
+      "file_id": "1MaRDpQ8-WKoH6Jee6htt52-pKrrrWSKQ",
+      "image_url": "https://drive.google.com/uc?export=download&id=1MaRDpQ8-WKoH6Jee6htt52-pKrrrWSKQ",
+      "thumbnail_url": "https://drive.google.com/thumbnail?id=1MaRDpQ8-WKoH6Jee6htt52-pKrrrWSKQ&sz=w1000"
     }
   ],
   "articles": [
@@ -971,9 +1055,21 @@
       "name": "denita",
       "text": "pengembangan perumahan eksisting lingkungan sudah jadi bikin tinggal semakin nyaman",
       "rate": 5
+    },
+    {
+      "id": 2,
+      "name": "Budi Santoso",
+      "text": "Survey kemarin dilayani ramah, penjelasan DP 0% dan biaya KPR ditanggung sangat membantu. Lokasi Kelapa Dua memang strategis!",
+      "rate": 5
+    },
+    {
+      "id": 3,
+      "name": "Siti Rahayu",
+      "text": "Akhirnya punya rumah classic-modern impian di Depok. Progress pembangunan transparan, tiap minggu dikirim foto.",
+      "rate": 5
     }
   ],
-  "generated_at": "2026-09-07T06:45:00.000Z",
+  "generated_at": "2026-09-08T09:16:53.614Z",
   "persons": [
     {
       "name": "Ari Kuncoro Untung",
@@ -981,7 +1077,7 @@
       "experience": 10,
       "quote": "Membangun bisnis berkelanjutan yang terus berinovasi dan memberikan nilai terbaik bagi pelanggan serta memajukan kesejahteraan seluruh tim.",
       "strength": "Kepemimpinan strategis, visi jangka panjang yang kuat, kemampuan mengambil keputusan berisiko tinggi, serta keahlian mengelola sumber daya untuk pertumbuhan bisnis yang berkelanjutan.",
-      "photo": ""
+      "photo": "https://drive.google.com/thumbnail?id=1N5v5ymGV_P3DfpI7ZacBQr0wyeEdncEh&sz=w800"
     },
     {
       "name": "Iqbal Rachman",
@@ -989,7 +1085,7 @@
       "experience": 8,
       "quote": "Memperluas jangkauan pasar melalui strategi digital yang terukur, kreatif, dan inovatif demi meningkatkan daya saing bisnis serta loyalitas pelanggan secara berkelanjutan.",
       "strength": "Keahlian analisis data mendalam, penguasaan strategi pemasaran digital modern, kreativitas tinggi dalam merancang kampanye, serta kemampuan mengoptimalkan ROI dan jangkauan audiens secara efektif.",
-      "photo": ""
+      "photo": "https://drive.google.com/thumbnail?id=1rSeliq8IGhVeECy5nrKrW9pl2KCxkIK-&sz=w800"
     },
     {
       "name": "Widodo Kusuma",
@@ -997,7 +1093,7 @@
       "experience": 7,
       "quote": "Meningkatkan pertumbuhan bisnis secara signifikan melalui strategi pemasaran eksekutif yang inovatif, memperluas kemitraan strategis, dan memaksimalkan kepuasan serta loyalitas pelanggan jangka panjang.",
       "strength": "Kemampuan komunikasi persuasif yang tinggi, pemahaman mendalam tentang pasar, kepemimpinan tim penjualan, serta keahlian merancang strategi pemasaran yang efektif untuk meningkatkan pendapatan perusahaan.",
-      "photo": ""
+      "photo": "https://drive.google.com/thumbnail?id=1N3Nj9IhWWDP2T6qX0_EoYQ7DoX2Gppsx&sz=w800"
     },
     {
       "name": "Hendro Kurniawan",
@@ -1005,7 +1101,7 @@
       "experience": 9,
       "quote": "Merancang karya arsitektur fungsional dan estetis yang berlanjut, menghadirkan inovasi ruang untuk meningkatkan kualitas hidup masyarakat secara menyeluruh.",
       "strength": "Kreativitas tinggi dalam merancang struktur yang estetik dan fungsional, pemikiran spasial yang kuat, presisi teknis, serta keahlian memadukan visi klien dengan standar keamanan bangunan.",
-      "photo": ""
+      "photo": "https://drive.google.com/thumbnail?id=1Dpz503PuX7Mdf7Xl6pXnUwOn-AeozkOs&sz=w800"
     }
   ]
 }
