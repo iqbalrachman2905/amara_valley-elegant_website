@@ -1,4 +1,6 @@
 ---
+import { specHighlights } from '../lib/derive.js';
+
 const { content, specImgs = [] } = Astro.props;
 
 const specKeys = Object.keys(content)
@@ -11,6 +13,10 @@ const specs = specKeys
     return { title: title?.trim(), desc: desc?.trim() };
   })
   .filter((s) => s.title && s.desc);
+
+// Highlight dipilih dari daftar spec_* yang sama (dulunya 3 baris ini
+// ditulis mati & menduplikasi spec_3/spec_4/spec_10).
+const highlights = specHighlights(specs);
 ---
 
 {specs.length > 0 && (
@@ -28,9 +34,9 @@ const specs = specKeys
         </p>
 
         <ul class="spec-highlights" data-reveal>
-          <li>Lantai granit 60×60 <span>White Carrera</span></li>
-          <li>Pintu utama <span>solid wood</span></li>
-          <li>Listrik <span>PLN 2200 Watt</span></li>
+          {highlights.map((h) => (
+            <li>{h.title} <span>{h.desc}</span></li>
+          ))}
         </ul>
 
         {specImgs[0] && (

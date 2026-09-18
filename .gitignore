@@ -10,3 +10,6 @@ dist/
 # Env
 .env
 .env.*
+
+# Repo ini pakai bun.lock; lockfile npm (hasil npm install lokal) jangan ikut ter-commit
+package-lock.json

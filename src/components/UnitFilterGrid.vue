@@ -1,15 +1,18 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { statusStyle, formatRupiah, buildWaLink, estimateMonthlyInstallment } from '../lib/format.js';
+import { KPR_FALLBACK } from '../lib/derive.js';
 
 const props = defineProps({
   units: { type: Array, required: true },
-  waNumber: { type: String, default: '' }
+  waNumber: { type: String, default: '' },
+  // Asumsi simulasi cicilan di modal compare — mengikuti key KPR di sheet
+  // (kpr_dp_default / kpr_tenor_default) lewat kprDefaults() di index.
+  compareDpPercent: { type: Number, default: KPR_FALLBACK.dpPercent },
+  compareTenorYears: { type: Number, default: KPR_FALLBACK.tenorYears }
 });
 
 const MAX_COMPARE = 3;
-const COMPARE_TENOR_YEARS = 20;
-const COMPARE_DP_PERCENT = 0;
 
 const filters = ['Semua', 'Available', 'Ready Unit', 'Progress (Ready Stock)', 'Sold'];
 const activeFilter = ref('Semua');
@@ -107,7 +110,7 @@ function pricePerM2(unit) {
   if (!unit.harga || !unit.luas_bangunan) return null;
   return Math.round(unit.harga / unit.luas_bangunan);
 }
-function monthlyFor(unit) { return estimateMonthlyInstallment(unit.harga, { dpPercent: COMPARE_DP_PERCENT, tenorYears: COMPARE_TENOR_YEARS }); }
+function monthlyFor(unit) { return estimateMonthlyInstallment(unit.harga, { dpPercent: props.compareDpPercent, tenorYears: props.compareTenorYears }); }
 </script>
 
 <template>
@@ -212,7 +215,7 @@ function monthlyFor(unit) { return estimateMonthlyInstallment(unit.harga, { dpPe
       <div class="compare-modal-header">
         <div>
           <p class="compare-modal-title">Bandingkan Unit</p>
-          <p class="compare-modal-note">Simulasi cicilan: tenor 20 tahun, DP Rp0 &mdash; simulasi kasar, bukan penawaran resmi bank.</p>
+          <p class="compare-modal-note">Simulasi cicilan: tenor {{ compareTenorYears }} tahun, DP {{ compareDpPercent }}% &mdash; simulasi kasar, bukan penawaran resmi bank.</p>
         </div>
         <button type="button" class="btn-clear" aria-label="Tutup" @click="showCompareModal = false">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>

@@ -1,18 +1,14 @@
 ---
-import { buildWaLink, cleanPhoneNumber } from '../lib/format.js';
+import { buildWaLink, cleanPhoneNumber, priceShortLabel } from '../lib/format.js';
 
-const { content } = Astro.props;
+const { content, minPrice = null } = Astro.props;
 const waLink = buildWaLink(content.whatsapp_number, `Halo, saya ingin booking / survey ${content.hero_title || 'Amara Valley'} (${content.promo_dp || ''} ${content.promo_booking || ''}).`);
 
 const igHandle = content.instagram_url ? content.instagram_url.split('/').filter(Boolean).pop() : null;
 const phone = content.footer_phone ? `+${cleanPhoneNumber(content.footer_phone).replace(/^62/, '62 ').replace(/(\d{4})(?=\d)/g, '$1 ')}` : null;
 
-const rawPrice = Number(content.price_from);
-const priceStart = rawPrice
-  ? rawPrice >= 1_000_000_000
-    ? `Rp ${(rawPrice / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 1 })} M`
-    : `Rp ${Math.round(rawPrice / 1e6)} jutaan`
-  : 'Rp 900 jutaan';
+// "Mulai dari Rp 0,9 M" — dari price_from, atau unit termurah di sheet Unit.
+const priceStart = priceShortLabel(Number(content.price_from) || Number(minPrice));
 ---
 
 <section class="cta">
@@ -20,7 +16,7 @@ const priceStart = rawPrice
   <div class="container cta-inner">
     <p class="cta-kicker" data-reveal>
       <span class="cta-line" aria-hidden="true"></span>
-      Mulai dari {priceStart} · {content.promo_dp || 'DP 0%'}
+      {priceStart ? `Mulai dari ${priceStart} · ` : ''}{content.promo_dp || ''}
     </p>
     <h2 class="cta-title" data-reveal>
       Rumah yang elegan <em class="accent-serif">tidak menunggu</em> terlalu lama.

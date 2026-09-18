@@ -24,12 +24,17 @@ interface Props {
 
 const {
   title,
-  description = 'Amara Valley — klaster rumah 2 lantai modern classic di Kelapa Dua, Depok. 28 unit eksklusif, DP 0%, mulai Rp 900 jutaan.',
+  // Deskripsi SEO dikirim tiap halaman (dari sheet / diturunkan dari data
+  // lewat fallbackMetaDescription()). Default di bawah cuma jaring
+  // pengaben terakhir — sengaja generik, tanpa angka yang bisa basi.
+  description = '',
   ogImage,
   companyName = 'Amara Land',
   companyPhone,
   waNumber
 } = Astro.props;
+
+const metaDescription = description || `Situs resmi ${companyName}${companyName ? ' — ' : ''}hunian modern classic.`;
 
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
 
@@ -51,7 +56,7 @@ const orgJsonLd = {
     <link rel="canonical" href={canonicalUrl} />
 
     <title>{title}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={metaDescription} />
     <meta name="theme-color" content="#211D15" />
 
     <!-- Tandai bahwa JS jalan - dipakai CSS scroll-reveal supaya tanpa-JS
@@ -61,13 +66,13 @@ const orgJsonLd = {
     <!-- Open Graph - ini yang bikin preview WA/Instagram tampil bagus -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={metaDescription} />
     <meta property="og:url" content={canonicalUrl} />
     {ogImage && <meta property="og:image" content={ogImage} />}
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:description" content={metaDescription} />
 
     <meta name="generator" content={Astro.generator} />
 
