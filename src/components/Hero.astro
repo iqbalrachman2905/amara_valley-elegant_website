@@ -1,10 +1,16 @@
 ---
 import { formatRupiah, buildWaLink } from '../lib/format.js';
+import { totalUnitNumber } from '../lib/derive.js';
 
-const { content, heroImageResult, availableUnits, totalUnits } = Astro.props;
+const { content, heroImageResult, availableUnits, totalUnits, unitCount = 0 } = Astro.props;
 
 const waMessage = `Halo, saya tertarik dengan ${content.hero_title || 'Amara Valley'}. Boleh info lebih lanjut?`;
 const waLink = buildWaLink(content.whatsapp_number, waMessage);
+
+// Jumlah unit keseluruhan: dari key total_unit ("28 Exclusive" → 28),
+// kalau kosong dihitung dari baris sheet Unit.
+const totalUnitNum = totalUnitNumber(content, unitCount);
+
 
 // Parse "2 Lantai::Desain Modern::3 Kamar Tidur::..." jadi kartu kecil fitur.
 // Kalau awalnya angka, tampilkan angka besarnya + label; kalau teks, italic.
@@ -77,13 +83,13 @@ const houseFeatures = String(content.rumah || '')
       </div>
       <span class="hero-price-divider" aria-hidden="true"></span>
       <div class="hero-scarcity">
-        {availableUnits !== undefined && availableUnits !== null && totalUnits ? (
+        {availableUnits !== undefined && availableUnits !== null && totalUnitNum > 0 ? (
           <>
             <span class="hero-scarcity-num"><span data-countup={availableUnits}>{availableUnits}</span></span>
-            <span class="hero-scarcity-label">unit tersedia<br />dari {totalUnits.replace(/[^0-9]/g, '') || totalUnits} unit</span>
+            <span class="hero-scarcity-label">unit tersedia<br />dari {totalUnitNum} unit</span>
           </>
         ) : (
-          <span class="hero-scarcity-label">{content.total_unit || '28 unit eksklusif'}</span>
+          <span class="hero-scarcity-label">{content.total_unit || (unitCount > 0 ? `${unitCount} unit eksklusif` : '')}</span>
         )}
       </div>
     </div>

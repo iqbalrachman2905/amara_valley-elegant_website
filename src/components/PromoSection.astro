@@ -1,7 +1,7 @@
 ---
 import { buildWaLink, formatRupiah } from '../lib/format.js';
 
-const { content } = Astro.props;
+const { content, minPrice = null } = Astro.props;
 
 const promoItems = Object.keys(content)
   .filter((k) => /^promo_items_\d+$/.test(k))
@@ -14,7 +14,10 @@ const start = content.promo_start_date ? new Date(content.promo_start_date) : nu
 const end = content.promo_end_date ? new Date(content.promo_end_date) : null;
 const isPromoActive = (!start || now >= start) && (!end || now <= end);
 
-const waMessage = `Halo, saya tertarik promo ${content.hero_title || 'Amara Valley'} (${content.promo_dp || 'DP 0%'} · ${content.promo_booking || ''}). Mohon info unit tersedia.`;
+// Harga mulai: key price_from di sheet, atau unit termurah dari sheet Unit.
+const hargaMulai = Number(content.price_from) || Number(minPrice) || null;
+
+const waMessage = `Halo, saya tertarik promo ${content.hero_title || 'Amara Valley'} (${content.promo_dp || ''} · ${content.promo_booking || ''}). Mohon info unit tersedia.`;
 const waLink = buildWaLink(content.whatsapp_number, waMessage);
 ---
 
@@ -28,7 +31,9 @@ const waLink = buildWaLink(content.whatsapp_number, waMessage);
           Penawaran Terbatas · {content.badge_text || 'Depok'}
         </p>
         <h2 class="promo-title">
-          Harga mulai {content.price_from ? formatRupiah(content.price_from).replace('Rp ', 'Rp') : '900 juta'}
+          {hargaMulai
+            ? <>Harga mulai {formatRupiah(hargaMulai).replace('Rp ', 'Rp')}</>
+            : <>Penawaran terbaik</>}
           <br /><em class="accent-serif">tanpa DP.</em>
         </h2>
         <p class="promo-desc">

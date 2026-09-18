@@ -1,24 +1,17 @@
 ---
-import { buildWaLink } from '../lib/format.js';
+import { buildWaLink, splitNarrativeParagraphs } from '../lib/format.js';
+import { aboutFacts } from '../lib/derive.js';
 
-const { content, aboutImgs = [] } = Astro.props;
+const { content, units = [], aboutImgs = [] } = Astro.props;
 const waLink = buildWaLink(content.whatsapp_number, `Halo, saya ingin konsultasi & jadwal survey ${content.hero_title || 'Amara Valley'}.`);
 
-const rawAbout = String(content.about_description || '').trim();
+// Narasi Tentang 100% dari key about_description di sheet. Sel yang kena
+// artefak paste kode JS (sisa `',` / `'`) otomatis dibersihkan per baris.
+const paragraphs = splitNarrativeParagraphs(content.about_description);
 
-// Teks "about_description" di spreadsheet saat ini masih berisi narasi proyek
-// template lain (Shanum Haven/Cimanggis). Selama belum diganti di spreadsheet,
-// kami tampilkan narasi khusus Amara Valley yang disusun ulang dari fakta
-// data (lokasi Kelapa Dua, 28 unit, luas unit, DP 0%, dll). Begitu teks asli
-// di spreadsheet diperbarui, narasi baru otomatis dipakai.
-const isLegacyText = /shanum|puri kencana|cimanggis|43 unit|radar auri/i.test(rawAbout);
-const paragraphs = isLegacyText || !rawAbout
-  ? [
-      'Amara Valley adalah klaster rumah tapak bergaya classic-modern karya Amara Land — 28 unit eksklusif dua lantai yang ditata di Kelapa Dua, salah satu kawasan tumbuh di jantung Kota Depok. Arsitektur klasik yang tenang berpadu dengan kenyamanan hunian modern: fasad elegan, ruang lapang, dan material yang dipilih dengan saksama.',
-      'Setiap rumah dibangun di lahan 56–73 m² dengan luas bangunan 70 m² — 3 kamar tidur, 3 kamar mandi, dan carport untuk 2 mobil. Materialnya berbicara sendiri: dinding hebel dengan plester halus, lantai granit 60×60, pintu utama solid wood, kusen full aluminium, hingga penutup atap genteng bitumen di atas rangka baja ringan.',
-      'Lokasinya yang berada di pusat kota, ±20 menit dari akses tol, menjadikan Amara Valley pilihan yang masuk akal bagi keluarga komuter yang menginginkan rumah elegan dengan nilai tumbuh. Ditambah program DP 0% serta biaya KPR dan balik nama yang dapat ditanggung pengembang, memiliki rumah pertama yang berkelas terasa jauh lebih dekat.'
-    ]
-  : rawAbout.split(/\n+/).map(s => s.trim()).filter(Boolean);
+// Fakta ringkas dihitung dari data: luas dari sheet Unit, kamar mandi &
+// carport dari key "rumah". Dulunya angka-angka ini ditulis mati di sini.
+const facts = aboutFacts(content, units);
 ---
 
 <section id="tentang" class="about">
@@ -62,24 +55,16 @@ const paragraphs = isLegacyText || !rawAbout
         {paragraphs.map(p => <p>{p}</p>)}
       </div>
 
-      <dl class="about-facts" data-reveal>
-        <div class="fact">
-          <dt>Luas Tanah</dt>
-          <dd>56 – 73 m²</dd>
-        </div>
-        <div class="fact">
-          <dt>Luas Bangunan</dt>
-          <dd>70 m²</dd>
-        </div>
-        <div class="fact">
-          <dt>Kamar</dt>
-          <dd>3 KT · 3 KM</dd>
-        </div>
-        <div class="fact">
-          <dt>Carport</dt>
-          <dd>2 Mobil</dd>
-        </div>
-      </dl>
+      {facts.length > 0 && (
+        <dl class="about-facts" data-reveal>
+          {facts.map((f) => (
+            <div class="fact">
+              <dt>{f.label}</dt>
+              <dd>{f.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
 
       <div class="about-actions" data-reveal>
         <a href={waLink} target="_blank" rel="noopener noreferrer" class="btn btn-ink">

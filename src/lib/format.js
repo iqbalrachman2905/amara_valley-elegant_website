@@ -4,6 +4,37 @@ export function formatRupiah(num) {
 }
 
 /**
+ * Harga versi pendek untuk headline/CTA ("Rp 0,9 M", "Rp 900 jutaan").
+ * Mengembalikan null bila angka tidak valid — pemanggil bisa menyusun
+ * teks cadangan dari data lain, bukan dari konstanta.
+ */
+export function priceShortLabel(raw) {
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (n >= 1_000_000_000) {
+    return `Rp ${(n / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 1 })} M`;
+  }
+  return `Rp ${Math.round(n / 1e6)} jutaan`;
+}
+
+/**
+ * Bersih-bersih sel narasi yang kena artefak paste kode JS di spreadsheet
+ * (mis. about_description yang isinya ada sisa `',` dan `'` di tiap
+ * pergantian paragraf). Mengembalikan array paragraf bersih.
+ * Sel yang bersih tetap bersih — fungsi ini tidak mengubah isi substantif.
+ */
+export function splitNarrativeParagraphs(raw) {
+  return String(raw || '')
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .map(line => line
+      .replace(/^['"“”]+/, '')
+      .replace(/['"“”]+,?$/, '')
+      .trim())
+    .filter(Boolean);
+}
+
+/**
  * Bersihin nomor telepon dari karakter aneh - di sheet Content kolom
  * whatsapp_number kadang kesimpen sebagai "=6285691235723" (artefak dari
  * Google Sheets), jadi kita jaga-jaga strip semua yang bukan digit.

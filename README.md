@@ -13,6 +13,53 @@ scroll halus, dan fotografi full-bleed.
 - Font: Playfair Display + Plus Jakarta Sans (self-hosted via `@fontsource`)
 - Deploy: GitHub Pages (`.github/workflows/deploy.yml`)
 
+## Prinsip: tidak ada hardcode untuk angka/gambar/perhitungan
+
+Semua **angka, fakta, harga, dan asumsi perhitungan** diturunkan dari data
+spreadsheet lewat `src/lib/derive.js` — bukan ditulis mati di komponen:
+
+| Yang tampil di situs | Sumber data |
+| --- | --- |
+| Harga mulai (hero, promo, CTA) | `price_from`, fallback unit termurah di sheet `Unit` |
+| Unit tersedia / total unit | dihitung dari baris sheet `Unit` & `total_unit` |
+| Luas tanah/bangunan (Tentang) | `luas_tanah`/`luas_bangunan` sheet `Unit` (min–max) |
+| Kamar mandi, carport, lantai | diparse dari key `rumah` / `jumlah_lantai` |
+| Highlight material (Spesifikasi) | dipilih otomatis dari `spec_1`…`spec_N` |
+| Narasi jumlah rumah (Siteplan) | `total_unit` + `jumlah_lantai` |
+| Cicilan & simulasi compare | rumus anuitas + asumsi dari sheet (lihat bawah) |
+
+Yang boleh hardcoded hanyalah teks deskriptif/narasi (judul section,
+microcopy tombol, dsb.). Gambar dummy lokal hanya **fallback terakhir** saat
+foto Drive kosong/gagal dimuat.
+
+### Key tambahan untuk kalkulator KPR (tab `Content`)
+
+| key | contoh nilai | keterangan |
+| --- | --- | --- |
+| `kpr_dp_default` | `0` | DP awal (%) di kalkulator & simulasi compare |
+| `kpr_rate_default` | `7.5` | suku bunga awal (%/tahun) |
+| `kpr_tenor_default` | `15` | tenor awal (tahun) |
+
+Ketiganya opsional: kalau kosong, DP diturunkan otomatis dari `promo_dp`
+("DP 0%" → 0%) dan bunga/tenor memakai nilai wajar umum KPR. Begitu key
+diisi di sheet, kalkulator langsung mengikutinya tanpa ubah kode.
+
+### Key sosmed (tab `Content`)
+
+`instagram_url`, `facebook_url`, `x_url`, `youtube_url` — semua ditampilkan
+di footer; key yang kosong otomatis disembunyikan.
+
+### Kategori foto di sheet `Galeri`
+
+| kategori | dipakai untuk |
+| --- | --- |
+| `hero` | latar section Hero |
+| `unit` (isi `unit_id` = kode unit) | cover kartu unit |
+| `tentang` | foto section Tentang (urutan kedua = foto kecil) |
+| `interior` / `detail` | foto section Spesifikasi |
+| `progress` | masuk rotasi galeri |
+| *(kategori lain)* | masuk rotasi galeri |
+
 ## Alur data
 
 ```
@@ -21,8 +68,9 @@ Google Spreadsheet ─▶ Apps Script API ─▶ Astro build ─▶ HTML statis
                         └─(gagal)─▶ data/snapshot.json (fallback)
 ```
 
-1. **Sumber materi:** spreadsheet (tab `Content`, `Unit`, `Galeri`, `Artikel`, `Testimoni`)
-   dibaca oleh Apps Script dan diekspos lewat endpoint `src/lib/api.js`.
+1. **Sumber materi:** spreadsheet (tab `Content`, `Unit`, `Galeri`, `Artikel`,
+   `Testimoni`, `Person`) dibaca oleh Apps Script dan diekspos lewat endpoint
+   `src/lib/api.js`.
 2. **Fallback:** saat API tidak terjangkau (mis. cold start), build memakai
    `data/snapshot.json` — data terakhir yang tersimpan. Untuk menyegarkannya:
 
@@ -30,17 +78,17 @@ Google Spreadsheet ─▶ Apps Script API ─▶ Astro build ─▶ HTML statis
    node scripts/fetch-snapshot.mjs
    ```
 
-3. **Gambar:** foto asli (Google Drive) dipakai lebih dulu lewat pipeline
-   `astro:assets`. Bila belum tersedia atau gagal diunduh saat build, situs
-   memakai gambar dummy elegan di `src/assets/dummy/` (AI-generated, konsisten
-   dengan gaya *modern-classic ivory*). Ganti gambar dummy dengan foto asli
-   kapan pun sudah ada — cukup tambahkan baris di tab `Galeri` spreadsheet.
+3. **Gambar:** foto dari Google Drive (tab `Galeri`, kolom `photo` di
+   `Person`, key `siteplan`) dipakai langsung sebagai URL thumbnail — tidak
+   ada unduhan build-time, jadi build tidak pernah gagal gara-gara Drive.
+   Gambar dummy lokal di `src/assets/dummy/` hanya muncul kalau data foto di
+   sheet belum ada.
 
-> Catatan konten: teks *Tentang*, artikel, video, dan siteplan di spreadsheet
-> masih berisi materi template proyek lama. Halaman menampilkannya apa adanya
-> sesuai instruksi, dengan beberapa penyesuaian cerdas (mis. narasi *Tentang*
-> memakai teks Amara Valley yang disusun ulang dari data sampai spreadsheet
-> diperbarui — deteksi otomatis, tidak perlu ubah kode).
+> Catatan kebersihan data: sel `about_description` yang mengandung sisa
+> paste kode (tanda `'` dan `,` di pergantian paragraf) dibersihkan otomatis
+> oleh `splitNarrativeParagraphs()`; kolom `deskripsi` sheet `Unit` yang
+> berisi kode internal otomatis disembunyikan. Sebaiknya tetap dibersihkan
+> di sheet juga.
 
 ## Menjalankan
 
@@ -75,10 +123,9 @@ scripts/fetch-snapshot.mjs ← refresh snapshot dari API
 
 ## Halaman Tim Kami (`/tim/`)
 
-Menampilkan profil pegawai dari sheet **Person** (`name`, `position`, `experience`,
-`quote`, `strength`, `photo`). Backend Apps Script saat ini belum mengekspos sheet
-tersebut, jadi halaman memakai data contoh di `snapshot.persons` + foto profil
-dummy (`src/assets/dummy/team/`). Begitu backend menyediakan data `persons`,
-halaman otomatis menampilkannya tanpa perubahan kode — kolom `photo` yang berisi
-link gambar (Google Drive dsb.) otomatis dipakai menggantikan dummy.
+Menampilkan profil pegawai dari sheet **Person** (`name`, `position`,
+`experience`, `quote`, `strength`, `photo`). Backend Apps Script sudah
+mengekspos action `persons` — foto profil dari Google Drive otomatis dipakai
+begitu kolom `photo` diisi; selama kosong, halaman memakai foto dummy di
+`src/assets/dummy/team/` dan mencantumkan catatan bahwa foto masih ilustrasi.
 

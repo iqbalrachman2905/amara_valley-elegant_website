@@ -1,17 +1,24 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { formatRupiah, estimateMonthlyInstallment } from '../lib/format.js';
+import { KPR_FALLBACK } from '../lib/derive.js';
 
+// Semua nilai awal dikirim dari halaman (hasil kprDefaults() di
+// src/lib/derive.js) yang sumbernya key sheet Content:
+// kpr_dp_default / kpr_rate_default / kpr_tenor_default / price_from.
+// Default di bawah hanyalah jaring pengaman kalau prop tidak terkirim.
 const props = defineProps({
-  defaultPrice: { type: Number, default: 900000000 }
+  defaultPrice: { type: Number, default: 0 },
+  defaultDp: { type: Number, default: KPR_FALLBACK.dpPercent },
+  defaultRate: { type: Number, default: KPR_FALLBACK.ratePercent },
+  defaultTenor: { type: Number, default: KPR_FALLBACK.tenorYears },
+  tenorOptions: { type: Array, default: () => [...KPR_FALLBACK.tenorOptions] }
 });
 
 const price = ref(props.defaultPrice);
-const dpPercent = ref(10);
-const rate = ref(7.5);
-const tenor = ref(15);
-
-const tenorOptions = [5, 10, 15, 20];
+const dpPercent = ref(props.defaultDp);
+const rate = ref(props.defaultRate);
+const tenor = ref(props.defaultTenor);
 
 const dpAmount = computed(() => Math.round((price.value * dpPercent.value) / 100));
 const loanAmount = computed(() => price.value - dpAmount.value);

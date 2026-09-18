@@ -21,6 +21,7 @@ import Footer from '../components/Footer.astro';
 import { getSiteData, findCoverImage } from '../lib/api.js';
 import { safeImage, drivePreviewUrl } from '../lib/image.js';
 import { extractYoutubeId } from '../lib/format.js';
+import { unitStats, kprDefaults, fallbackMetaDescription } from '../lib/derive.js';
 
 // --- Gambar dummy lokal (fallback saat foto asli dari Drive/API belum ada
 // atau tidak bisa diunduh build-time). Seluruhnya dioptimasi astro:assets
@@ -143,10 +144,17 @@ if (galleryItems.length < 5) {
 // ---------- VIDEO ----------
 const videoId = extractYoutubeId(content.video);
 
-// ---------- STAT ----------
-const isAvailable = (u) => !/sold/i.test(String(u.status || ''));
-const availableUnits = units.filter(isAvailable).length;
-const totalUnits = content.total_unit || `${units.length} Exclusive`;
+// ---------- STAT (dihitung dari sheet Unit, bukan ditulis mati) ----------
+const stats = unitStats(units);
+const availableUnits = stats.available;
+const totalUnits = content.total_unit || (stats.total > 0 ? `${stats.total} Exclusive` : '');
+
+// ---------- ASUMSI KPR (dari key sheet: kpr_dp_default, kpr_rate_default,
+// kpr_tenor_default, price_from — lihat kprDefaults() di lib/derive.js) ----------
+const kpr = kprDefaults(content, units);
+
+// Meta description cadangan kalau meta_description kosong di sheet.
+const metaDescription = content.meta_description || fallbackMetaDescription(content, units);
 
 // ---------- ARTIKEL ----------
 const articlesWithCover = await Promise.all(
@@ -161,7 +169,7 @@ const articlesWithCover = await Promise.all(
 
 <BaseLayout
   title={content.meta_title || `${content.hero_title || 'Amara Valley'} — Kelapa Dua, Depok`}
-  description={content.meta_description}
+  description={metaDescription}
   ogImage={heroImageResult?.src}
   companyName={content.company_name}
   companyPhone={content.footer_phone}
@@ -177,13 +185,14 @@ const articlesWithCover = await Promise.all(
       heroImageResult={heroImageResult}
       availableUnits={availableUnits}
       totalUnits={totalUnits}
+      unitCount={stats.total}
     />
 
     <!-- 03 · Tentang -->
-    <About content={content} aboutImgs={aboutImgs} />
+    <About content={content} units={units} aboutImgs={aboutImgs} />
 
     <!-- 04 · Penawaran (Promo) -->
-    <PromoSection content={content} />
+    <PromoSection content={content} minPrice={stats.minPrice} />
 
     <!-- 05 · Keunggulan pengembang -->
     <Trusted content={content} />
@@ -202,7 +211,13 @@ const articlesWithCover = await Promise.all(
           </p>
         </div>
         <div data-reveal style="--reveal-delay: 120ms">
-          <UnitFilterGrid client:visible units={unitsWithCover} waNumber={content.whatsapp_number} />
+          <UnitFilterGrid
+            client:visible
+            units={unitsWithCover}
+            waNumber={content.whatsapp_number}
+            compareDpPercent={kpr.dpPercent}
+            compareTenorYears={kpr.tenorYears}
+          />
         </div>
       </div>
     </section>
@@ -231,7 +246,14 @@ const articlesWithCover = await Promise.all(
           <p class="sec-note">Geser angka sesuai kemampuan Anda — estimasi kasar, bukan penawaran resmi bank.</p>
         </div>
         <div data-reveal style="--reveal-delay: 140ms">
-          <KprCalculator client:visible defaultPrice={content.price_from || 900000000} />
+          <KprCalculator
+            client:visible
+            defaultPrice={kpr.price}
+            defaultDp={kpr.dpPercent}
+            defaultRate={kpr.ratePercent}
+            defaultTenor={kpr.tenorYears}
+            tenorOptions={kpr.tenorOptions}
+          />
         </div>
       </div>
     </section>
@@ -246,7 +268,7 @@ const articlesWithCover = await Promise.all(
     <ArticlePreview articles={articlesWithCover} content={content} />
 
     <!-- 16 · CTA akhir -->
-    <CTABand content={content} />
+    <CTABand content={content} minPrice={stats.minPrice} />
   </main>
 
   <!-- 17 · Footer -->

@@ -78,6 +78,10 @@ const totalYears = people.reduce((sum, p) => sum + (p.expNum || 0), 0);
 const teamSize = people.length;
 
 const waGeneral = buildWaLink(content.whatsapp_number, `Halo, saya ingin bicara dengan tim ${content.company_name || 'Amara Land'} tentang ${content.hero_title || 'Amara Valley'}.`);
+
+// Ada foto asli dari sheet Person? Kalau ada, catatan "masih ilustrasi"
+// tidak perlu ditampilkan.
+const hasRealPhotos = persons.some(p => String(p.photo || '').trim());
 ---
 
 <BaseLayout
